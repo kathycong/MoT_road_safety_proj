@@ -1,0 +1,99 @@
+---
+title: "MoT Road Safety Project"
+author: "Kathlyn Ycong"
+date: "03/08/2021"
+output: html_document
+---
+
+
+
+`Project Aim/Goal`
+MoT are looking to adapt traficalmr utilities and methodologies for New Zealand 
+using open data to understand road safety outcomes
+
+`Project Description`
+Adapting UK's trafficalmr to the New Zealand context and enable policy.traffic 
+calming intervention analyses.
+
+This project involves data processing with various data such as geospatial 
+datasets, APIs and census datasets.
+
+The policy analysis will use the developed data foundations to estimate the 
+casualty rate per billion kilometres for walking and cycling during journey 
+to work commutes.
+
+
+`Project Outcomes`
+- R functions for processing CAS, census journet to work and, transport relevant 
+openstreetmap data using trafficalmr as a guide.
+- Estimating causalty rates per billion kilometers for cycling and walking
+
+
+### Data Inputs
+1. Crash Analysis System (CAS) data from NZTA
+2. open data from NZTA
+3. OpenStreetMap for geospatial data on transport infrastructure
+4. Stats NZ census journey to work data
+
+
+####Crash data
+https://opendata-nzta.opendata.arcgis.com/datasets/8d684f1841fa4dbea6afaefc8a1ba0fc_0
+
+- extracted from the TransportAgency Crash Analysis System(CAS). CAS records all traffic crashes as reported to the Transport Agency by the NZ Police. Not all crashes are reported to the NZ Police. the level of reporting increases with the severity of the crash. Due to the nature of non-fatal crashes it is believed that these are under-reported. CAS covers crashes on all New Zealand roadways or places where the public have legal access with motor vehicle.
+
+####Open Street Map
+https://www.openstreetmap.org/
+
+- A map of the world, createdfor free to use under an open license
+
+
+####Stats NZ census journey to work data
+- The 2018 Census commuter view dataset contains the employed census usually resident population count aged 15 years and over by statistical area 2 for the main means of travel to work variable from the 2018 census.
+The geography corresponds to 2018 boundaries
+
+- This 2018 Census commuter view dataset is displayed by statistical area 2 geography and contains from-to (journey) information on an individual's usual residence and workplace address by main means to travel of work
+
+Workplace address definition
+- coded from information suppied by respondents about their workplaces. Where respondents do not supply sufficient information, their responses are coded to 'no further defined'. The 2018 Census commuter view datasets excludes these 'not further defined' areas, as such the sum of the counts for each region in this dataset may not be equal to the total employed census usually resident population count aged 15 years and over for that region. 
+
+
+```{r}
+## Loading CAS data
+
+cas.data <- read.csv("../Data Sources/Crash_Analysis_System_(CAS)_data.csv")
+
+head(cas.data)
+
+str(cas.data)
+
+```
+```{r}
+
+hist(cas.data$crashYear, main = "Historgram of Number of Crashes per Year from CAS data", xlab = "crash year")
+
+```
+###STATS NZ Journey to work data
+
+
+
+```{r}
+
+journey.to.work.d <-  read.csv("../Data Sources/2018-census-main-means-of-travel-to-work-by-statistical-a.csv")
+
+dim(journey.to.work.d)
+
+str(journey.to.work.d)
+
+```
+
+testing trafficalmr app
+
+```{r}
+
+remotes::install_github("saferactive/trafficalmr")
+
+
+```
+
+
+
