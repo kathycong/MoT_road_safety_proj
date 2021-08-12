@@ -618,7 +618,7 @@ points(loc$x, loc$y, pch='.')
 ```
 
 ```{r}
-list(x = c(174.149667174548, 175.383632470626), y = c(-36.554874067828, 
+q = list(x = c(174.149667174548, 175.383632470626), y = c(-36.554874067828, 
 -36.991016113938))
 par(mar=rep(0,4))
 plot(loc$x, loc$y, pch='.', asp=1/cos(-40.6/180*pi), ty='n', xlim=range(q$x), ylim=range(q$y))
@@ -649,4 +649,14 @@ plot(0, 0, pch='.', xlim=range(q$x), ylim=range(q$y), asp=1/cos(-40.6/180*pi), t
 snippets::osmap(cache.dir = "/tmp")
 points(g$lon, g$lat,pch=19,cex=sqrt(g$x/max(g$x))*1.2,col="#ff000040")
 points(g2$lon, g2$lat,pch=19,cex=sqrt(g2$x/max(g2$x))*1.5,col="#0000ff80")
+```
+```{r}
+ga = g[g$lon > range(q$x)[1] & g$lon < range(q$x)[2] & g$lat > range(q$y)[1] & g$lat < range(q$y)[2], ]
+## warning ! bad coordinates - since lat/lon aspect ration is not 1!! jsut a hack ;)
+d = deldir::deldir(ga$lon, ga$lat)
+plot(0, 0, pch='.', xlim=range(q$x), ylim=range(q$y), asp=1/cos(-40.6/180*pi), ty='n')
+snippets::osmap(cache.dir = "/tmp")
+points(g$lon, g$lat,pch=19,cex=sqrt(g$x/max(g$x))*1.2,col="#ff000040")
+points(g2$lon, g2$lat,pch=19,cex=sqrt(g2$x/max(g2$x))*1.5,col="#0000ff80")
+plot(d, add=TRUE, wlines="tess", pch='.')
 ```
