@@ -74,8 +74,13 @@ Crash data consists of crashes from 2000 to 2021.
 ```{r}
 ## Loading the data
 
-cas.data <- read.csv("../Data/Crash_Analysis_System_(CAS)_data.csv")
+if (!file.exists("Data/Crash_Analysis_System_(CAS)_data.rds")) {
+  cas.data <- iotools::read.csv.raw("Data/Crash_Analysis_System_(CAS)_data.csv")
+  saveRDS(cas.data, file="Data/Crash_Analysis_System_(CAS)_data.rds")
+} else cas.data <- readRDS("Data/Crash_Analysis_System_(CAS)_data.rds")
+
 #https://opendata-nzta.opendata.arcgis.com/datasets/8d684f1841fa4dbea6afaefc8a1ba0fc_0/explore?location=-9.962041%2C0.000000%2C2.20
+names(cas.data)[1] = "X"
 
 #size - 760k rows and 72 columns
 dim(cas.data)
@@ -126,7 +131,7 @@ table(cas.data$crashYear)[table(cas.data$crashYear) == max_val]
 ```{r}
 
 #load journey to work data
-journey.to.work <-  read.csv("../Data/2018-census-main-means-of-travel-to-work-by-statistical-a.csv")
+journey.to.work <-  read.csv("Data/2018-census-main-means-of-travel-to-work-by-statistical-a.csv")
 
 #size
 dim(journey.to.work)
@@ -141,7 +146,7 @@ str(journey.to.work)
 ```{r}
 
 #proportion of people that works the same area
-journey.to.work$same.area.boolean <- journey.to.work["ï..SA2_code_usual_residence_address"] == journey.to.work["SA2_code_workplace_address"]
+journey.to.work$same.area.boolean <- journey.to.work["SA2_code_usual_residence_address"] == journey.to.work["SA2_code_workplace_address"]
 
 same.area.df <-  aggregate(journey.to.work$Total, by=list(same.area=journey.to.work$same.area), FUN=sum)
 
@@ -171,7 +176,7 @@ colSums(journey.to.work[, 9:18])
 ```{r}
 
 ##loading the data
-sa2.centroid.inside <-  read.csv("../Data/statistical-area-2-2018-centroid-inside.csv")
+sa2.centroid.inside <-  read.csv("Data/statistical-area-2-2018-centroid-inside.csv")
 
 names(sa2.centroid.inside)
 
@@ -183,7 +188,7 @@ sa2.centroid.inside[c("SA22018_V1_00", "LATITUDE", "LONGITUDE")]
 
 ## joining coordinates (geocode) of usual residence 
 df <- journey.to.work %>% 
-  left_join(sa2.centroid.inside[c("SA22018_V1_00", "LATITUDE", "LONGITUDE")], by = c("ï..SA2_code_usual_residence_address" = "SA22018_V1_00")) %>% 
+  left_join(sa2.centroid.inside[c("SA22018_V1_00", "LATITUDE", "LONGITUDE")], by = c("SA2_code_usual_residence_address" = "SA22018_V1_00")) %>% 
   rename(usual.residence.LATITUDE = LATITUDE, usual.residence.LONGITUDE = LONGITUDE)
 
 ## joining coordinates (geocode) of usual workplace 
@@ -206,7 +211,7 @@ library(geosphere)
 
 df2$dist <- distHaversine(df2[c("usual.residence.LONGITUDE", "usual.residence.LATITUDE")], df2[c("usual.work.LONGITUDE", "usual.work.LATITUDE")])
 
-hist(df2[df2$dist > 0, ]$dist, breaks=100000)
+hist(df2[df2$dist > 0, ]$dist/1e3, breaks=1000, xlim=c(0,50))
 
 ```
 
@@ -598,8 +603,50 @@ table(v$vehicle_type_simple)
 
 
 ```{r}
-
-
+## convert from NZTM projection (EPSG:2193) to lat/lon
+## https://www.linz.govt.nz/data/linz-data-service/guides-and-documentation/using-lds-xyz-services-in-leaflet
+loc = proj4::project(cas.data[1:2], "+proj=tmerc +lat_0=0 +lon_0=173 +k=0.9996 +x_0=1600000 +y_0=10000000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs", inv=TRUE)
 
 ```
 
+```{r}
+## install.packages("snippets",,"https://rforge.net")
+par(mar=rep(0,4))
+plot(loc$x, loc$y, pch='.', asp=1/cos(-40.6/180*pi), ty='n')
+snippets::osmap()
+points(loc$x, loc$y, pch='.')
+```
+
+```{r}
+list(x = c(174.149667174548, 175.383632470626), y = c(-36.554874067828, 
+-36.991016113938))
+par(mar=rep(0,4))
+plot(loc$x, loc$y, pch='.', asp=1/cos(-40.6/180*pi), ty='n', xlim=range(q$x), ylim=range(q$y))
+snippets::osmap()
+points(loc$x, loc$y, pch='.')
+```
+
+```{r}
+akl = loc$x > range(q$x)[1] & loc$x < range(q$x)[2] & loc$y > range(q$y)[1] & loc$y < range(q$y)[2] & cas.data$crashYear %in% 2016:2019
+akl[is.na(akl)] = FALSE
+
+sum(akl)
+mean(akl)
+```
+
+```{r}
+par(mar=rep(0,4))
+g = aggregate(df2$Total, list(lon=df2$usual.residence.LONGITUDE,lat=df2$usual.residence.LATITUDE), sum)
+plot(0, 0, pch='.', xlim=range(q$x), ylim=range(q$y), asp=1/cos(-40.6/180*pi), ty='n')
+snippets::osmap(cache.dir = "/tmp")
+points(g$lon, g$lat,pch=19,cex=sqrt(g$x/max(g$x))*1.2,col="#00000080")
+```
+
+```{r}
+par(mar=rep(0,4))
+g2 = aggregate(df2$Total, list(lon=df2$usual.work.LONGITUDE,lat=df2$usual.work.LATITUDE), sum)
+plot(0, 0, pch='.', xlim=range(q$x), ylim=range(q$y), asp=1/cos(-40.6/180*pi), ty='n')
+snippets::osmap(cache.dir = "/tmp")
+points(g$lon, g$lat,pch=19,cex=sqrt(g$x/max(g$x))*1.2,col="#ff000040")
+points(g2$lon, g2$lat,pch=19,cex=sqrt(g2$x/max(g2$x))*1.5,col="#0000ff80")
+```
