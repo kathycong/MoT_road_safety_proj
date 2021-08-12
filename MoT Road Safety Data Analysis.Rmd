@@ -107,6 +107,8 @@ hist(rowSums(cas.data[cas.vehicle], na.rm = TRUE), main = "Histogram of number o
 barplot(colSums(cas.data[cas.vehicle], na.rm = TRUE), las=2)
 colSums(cas.data[cas.vehicle], na.rm = TRUE)
 
+barplot(cas.data$seriousInjuryCount)
+
 ```
 
 
