@@ -1,12 +1,9 @@
 ---
-title: "MoT Road Safety Project"
+title: "MoT Road Safety Data Analysis 1"
 author: "Kathlyn Ycong"
-date: "03/08/2021"
+date: "13/08/2021"
 output: html_document
 ---
-
-
-
 `Project Aim/Goal`
 MoT are looking to adapt traficalmr utilities and methodologies for New Zealand 
 using open data to understand road safety outcomes
@@ -30,30 +27,34 @@ openstreetmap data using trafficalmr as a guide.
 
 
 ### Data Inputs
+
 1. Crash Analysis System (CAS) data from NZTA
 2. open data from NZTA
 3. OpenStreetMap for geospatial data on transport infrastructure
 4. Stats NZ census journey to work data
 
 
-####Crash data
+#### Crash data
+
 https://opendata-nzta.opendata.arcgis.com/datasets/8d684f1841fa4dbea6afaefc8a1ba0fc_0
 
 - extracted from the TransportAgency Crash Analysis System(CAS). CAS records all traffic crashes as reported to the Transport Agency by the NZ Police. Not all crashes are reported to the NZ Police. the level of reporting increases with the severity of the crash. Due to the nature of non-fatal crashes it is believed that these are under-reported. CAS covers crashes on all New Zealand roadways or places where the public have legal access with motor vehicle.
 
-####Open Street Map
+#### Open Street Map
+
 https://www.openstreetmap.org/
 
 - A map of the world, createdfor free to use under an open license
 
 
-####Stats NZ census journey to work data
+#### Stats NZ census journey to work data
+
 - The 2018 Census commuter view dataset contains the employed census usually resident population count aged 15 years and over by statistical area 2 for the main means of travel to work variable from the 2018 census.
 The geography corresponds to 2018 boundaries
 
 - This 2018 Census commuter view dataset is displayed by statistical area 2 geography and contains from-to (journey) information on an individual's usual residence and workplace address by main means to travel of work
 
-Workplace address definition
+*Workplace address definition*
 - coded from information supplied by respondents about their workplaces. Where respondents do not supply sufficient information, their responses are coded to 'no further defined'. The 2018 Census commuter view datasets excludes these 'not further defined' areas, as such the sum of the counts for each region in this dataset may not be equal to the total employed census usually resident population count aged 15 years and over for that region. 
 
 
@@ -61,7 +62,6 @@ Workplace address definition
 
 
 ### NZTA Crash data
-
 
 As noted by Shriv the columns X and Y in CAS data is a GeometryTrype Type. A spatial dataset and the crs is 2193 (usually used 4326). 2193 is a standard specifically for NZ https://epsg.io/2193.
 
@@ -72,24 +72,25 @@ Is there a need to check the interaction other attributes in the data such as we
 Crash data consists of crashes from 2000 to 2021.
 
 ```{r}
-## Loading the data
+## Loading the cast data
 
+#install.packages("iotools")
 if (!file.exists("Data/Crash_Analysis_System_(CAS)_data.rds")) {
   cas.data <- iotools::read.csv.raw("Data/Crash_Analysis_System_(CAS)_data.csv")
   saveRDS(cas.data, file="Data/Crash_Analysis_System_(CAS)_data.rds")
-} else cas.data <- readRDS("Data/Crash_Analysis_System_(CAS)_data.rds")
+} else {cas.data <- readRDS("Data/Crash_Analysis_System_(CAS)_data.rds")}
 
+## link to cas data
 #https://opendata-nzta.opendata.arcgis.com/datasets/8d684f1841fa4dbea6afaefc8a1ba0fc_0/explore?location=-9.962041%2C0.000000%2C2.20
-names(cas.data)[1] = "X"
 
 #size - 760k rows and 72 columns
 dim(cas.data)
 
 #preview the data
-head(cas.data, 2)
+#head(cas.data)
 
 #check the data types in the data
-str(cas.data)
+#str(cas.data)
 
 #vehicle columns
 cas.vehicle <- c('bicycle', 
@@ -107,86 +108,118 @@ cas.vehicle <- c('bicycle',
 'vanOrUtility',
 'vehicle')
 
-hist(rowSums(cas.data[cas.vehicle], na.rm = TRUE), main = "Histogram of number of vehicles included in the crash")
+#Histogram of number of vehicles involve in the crash
+#Proportion 1 vechicle crashes involved objects such as tree, cliff and etc.
+hist(rowSums(cas.data[cas.vehicle], na.rm = TRUE), main = "Histogram of number of vehicles involve in the crash", ylab = 'no. of crashes', xlab = 'no. of vehicle in the crash')
 
-barplot(colSums(cas.data[cas.vehicle], na.rm = TRUE), las=2)
+
+#Vehicle type crashes
+op <- par(mar = c(10,4,2,1) + 0.1)
+barplot(colSums(cas.data[cas.vehicle], na.rm = TRUE), las=2, main = '2000 to 2021 Crashes by Vehicle Type')
+par(op)
 colSums(cas.data[cas.vehicle], na.rm = TRUE)
-
-barplot(cas.data$seriousInjuryCount)
 
 ```
 
 
 ```{r}
 
+serious.injury.per.year <- aggregate(cas.data$seriousInjuryCount, by = list(Crash.Year = cas.data$crashYear), FUN = sum, na.rm = T)
+
+minor.injury.per.year <- aggregate(cas.data$minorInjuryCount, by = list(Crash.Year = cas.data$crashYear), FUN = sum, na.rm = T)
+
+fatality.per.year <- aggregate(cas.data$fatalCount, by = list(Crash.Year = cas.data$crashYear), FUN = sum, na.rm = T)
+
 #plotting the number of crashes
 plot(table(cas.data$crashYear), col = 4, ty = 'o', ylab = "number of crashes", main = "The count of crashes per year")
 
+#serious injury crashes
+lines(fatality.per.year$Crash.Year, fatality.per.year$x, col = "red", ty = 'o')
+
+#serious injury crashes
+lines(serious.injury.per.year$Crash.Year, serious.injury.per.year$x, col = "orange", ty = 'o')
+
+#minor injury crashes
+lines(minor.injury.per.year$Crash.Year, minor.injury.per.year$x, col = "purple", ty = 'o')
+
+legend(2008, -10000, legend = c("Total Crashes", "Fatalities", "Serious Injury", "Minor injury"),col=c("blue", "red", "orange", "purple"), bty='n', xpd=NA, horiz=TRUE, xjust=0.5, lwd=c(2,2,2,2))
+
+#average serious injury from crash per year
+mean(serious.injury.per.year$x)
+
+#year with the highest crash 
 max_val <- max(table(cas.data$crashYear))
 
 #Year with the highest crashes
 table(cas.data$crashYear)[table(cas.data$crashYear) == max_val]
 
 ```
-###STATS NZ Journey to work data
 
+
+###STATS NZ Journey to work data
 ```{r}
 
 #load journey to work data
-journey.to.work <-  read.csv("Data/2018-census-main-means-of-travel-to-work-by-statistical-a.csv")
+journey.to.work <-  read.csv("Data/2018-census-main-means-of-travel-to-work-by-statistical-a.csv", fileEncoding="UTF-8-BOM")
 
-#size
+#size - 50870    19
 dim(journey.to.work)
 
 #columns
-names(journey.to.work)
+# WARNING: noticed column names is different for different PCs - mac vs windows
+#names(journey.to.work)
 
 #columns and data type
-str(journey.to.work)
+#str(journey.to.work)
 
 ```
+
+
+
 ```{r}
 
 #proportion of people that works the same area
-journey.to.work$same.area.boolean <- journey.to.work["SA2_code_usual_residence_address"] == journey.to.work["SA2_code_workplace_address"]
+journey.to.work$same.area.boolean <- journey.to.work[[1]] == journey.to.work[[5]]
 
-same.area.df <-  aggregate(journey.to.work$Total, by=list(same.area=journey.to.work$same.area), FUN=sum)
+same.area.df <-  aggregate(journey.to.work$Total, by=list(same.area=journey.to.work$same.area.boolean), FUN=sum)
 
-barplot(height=same.area.df$x, names=c('different area', 'same area'), col="#69b3a2")
+barplot(height=same.area.df$x, names=c('different area', 'same area'), col="#69b3a2", main = 'Commuter Workplace vs. Residence Location')
 
-
+#74% of the commuter work on different area from its residential area
 same.area.df$x[1]/sum(same.area.df$x)
 same.area.df$x[2]/sum(same.area.df$x)
+
+
 
 ```
 
 ```{r}
-
-journey.to.work
 
 #replacing -999 with 0
 journey.to.work[journey.to.work == "-999"] <- 0
 
+#most commuters drive a private car/truck/van
 op <- par(mar = c(18,4,2,1) + 0.1)
 barplot(colSums(journey.to.work[, 9:18]), las = 2)
 par(op)
 
 colSums(journey.to.work[, 9:18])
 ```
+
 ### joining statistical area data with journey to work data
 
 ```{r}
 
 ##loading the data
-sa2.centroid.inside <-  read.csv("Data/statistical-area-2-2018-centroid-inside.csv")
+sa2.centroid.inside <-  read.csv("Data/statistical-area-2-2018-centroid-inside.csv", fileEncoding="UTF-8-BOM")
 
-names(sa2.centroid.inside)
+#names(sa2.centroid.inside)
 
 ##joining long and lat data from 'sa2 centroid inside' data with journey to work data
 
 library(dplyr)
 
-sa2.centroid.inside[c("SA22018_V1_00", "LATITUDE", "LONGITUDE")]
+#sa2.centroid.inside[c("SA22018_V1_00", "LATITUDE", "LONGITUDE")]
 
 ## joining coordinates (geocode) of usual residence 
 df <- journey.to.work %>% 
@@ -198,25 +231,42 @@ df2 <- df %>%
   left_join(sa2.centroid.inside[c("SA22018_V1_00", "LATITUDE", "LONGITUDE")], by = c("SA2_code_workplace_address" = "SA22018_V1_00")) %>% 
   rename(usual.work.LATITUDE = LATITUDE, usual.work.LONGITUDE = LONGITUDE)
 
-names(df2)
+#names(df2)
 
-dim(df2)
+#dim(df2)
 
 
 ```
 ### Calculate the distance between two points
 
 ```{r}
+#install.packages("geosphere")
 library(geosphere)
 
 #getting the distance between two points using Haversine formula in meters
 
 df2$dist <- distHaversine(df2[c("usual.residence.LONGITUDE", "usual.residence.LATITUDE")], df2[c("usual.work.LONGITUDE", "usual.work.LATITUDE")])
 
-hist(df2[df2$dist > 0, ]$dist/1e3, breaks=1000, xlim=c(0,50))
+hist(df2[df2$dist > 0, ]$dist/1e3, breaks=1000, xlim=c(0,50), main = "Histogram of distance travelled by commuter from home to work (km)", xlab = 'distance travelled (km)')
 
 ```
 
+### Killed and serious injury by distance travelled
+
+```{r}
+
+#total serious injury and
+serious_injury_and_fatal_crashes <- sum(cas.data[cas.data$crashYear %in% 2016:2019, ][c("seriousInjuryCount", "fatalCount")], na.rm = T)
+
+total_dist_travelled <- sum(df2$dist)
+
+#KSI/bkm in crashes between 2016 to 2019
+serious_injury_and_fatal_crashes/(total_dist_travelled/1e9)
+
+#KSI/bkm in crashes between 2018
+sum(cas.data[cas.data$crashYear == 2018, ][c("seriousInjuryCount", "fatalCount")], na.rm = T)/(total_dist_travelled/1e9)
+
+```
 ### Using Mapview and osm data to plot traffic calming in Auckland
 
 Note there are different libraries to access openstreet map, either using ggmap, mapview, OpenStreetMap.
@@ -224,7 +274,7 @@ Note there are different libraries to access openstreet map, either using ggmap,
 ```{r}
 
 # this function was from trafficalmr 
-
+#remotes::install_github("saferactive/trafficalmr")
 
 tc_get_osm = function(bbox = NULL, value = NULL, output = "osm_points") {
   res = osmdata::osmdata_sf(
@@ -247,418 +297,88 @@ mapview::mapview(traffic_calming_points["traffic_calming"])
 
 ```
 
-```{r}
-#https://www.r-bloggers.com/2018/11/accessing-openstreetmap-data-with-r/
-#https://ggplot2tutor.com/tutorials/streetmaps
 
-#load packages
-library(tidyverse)
-library(osmdata)
-library(sf)
-library(ggmap)
-
-#our background map
-Wel_map <- get_map(getbb("Wellington New Zealand"), maptype = "toner-background")
-
-#final map
-ggmap(Wel_map)
-
-
-streets <- getbb("Wellington New Zealand")%>%
-  opq()%>%
-  add_osm_feature(key = "highway", 
-                  value = c("motorway", "primary", 
-                            "secondary", "tertiary")) %>% osmdata_sf()
-
-
-```
-
-
-################ TESTS OR SCRATCH##############################################
+### Converting cas data from NZTM projection to geocode (lat/lon)
 
 ```{r}
 
-
-library(tidyr)
-#http://www.cookbook-r.com/Manipulating_data/Converting_data_between_wide_and_long_format/
-
-# The arguments to gather():
-# - data: Data object
-# - key: Name of new key column (made from names of data columns)
-# - value: Name of new value column
-# - ...: Names of source columns that contain values
-# - factor_key: Treat the new key column as a factor (instead of character vector)
-data_long <- gather(olddata_wide, condition, measurement, control:cond2, factor_key=TRUE)
-
-
-```
-
-
-```{r}
-##Code from Simon
-
-library(sf) 
-s=st_read("../Data/statistical-area-2-2018-centroid-inside.shp") 
-plot(s$LONGITUDE, s$LATITUDE, pch='.', asp=1.2) 
-q=locator(2) 
-plot(s$LONGITUDE, s$LATITUDE, asp=1.2, xlim=range(q$x), ylim=range(q$y), pch=19, cex=.3) 
-```
-
-
-### Proportion of employees where work and home are on the same locations
-
-```{r}
-##is usual residence the same area as usual workplace
-barplot(table(journey.to.work.d["ï..SA2_code_usual_residence_address"] == journey.to.work.d["SA2_code_workplace_address"]))
-
-```
-
-
-
-### Openstreet Map 
-
--look at using osmar
-```{r}
-install.packages("rJava") #required for OpenStreetMap
-install.packages("OpenStreetMap")
-
-library(OpenStreetMap)
-library(ggplot2)
-
-LAT1 = 30
-LON1 = -10
-LAT2 = 50
-LON2 = 10
-
-map <- openmap(c(LAT2, LON1))
-
-```
-
-```{r}
-#https://www.r-bloggers.com/2018/11/accessing-openstreetmap-data-with-r/
-#https://ggplot2tutor.com/tutorials/streetmaps
-
-#load packages
-library(tidyverse)
-library(osmdata)
-library(sf)
-library(ggmap)
-
-#our background map
-nz_map <- get_map(getbb("New Zealand"), maptype = "toner-background")
-
-#final map
-ggmap(mad_map)
-
-
-streets <- getbb("Wellington New Zealand")%>%
-  opq()%>%
-  add_osm_feature(key = "highway", 
-                  value = c("motorway", "primary", 
-                            "secondary", "tertiary")) %>% osmdata_sf()
-
-getbb("Wellington New Zealand")
-
-#        min       max
-#x -62.34199 -62.28839
-#y  46.39124  46.43357
-
-#       min      max
-#x 174.6172 174.9372
-#y -41.4488 -41.1288
-
-ggplot() +
-  geom_sf(data = streets$osm_lines,
-          inherit.aes = FALSE,
-          color = "black",
-          size = .4,
-          alpha = .8) +
-  coord_sf(xlim = c(174.61, 174.93 ), 
-           ylim = c(-41.44, -41.12),
-           expand = FALSE) 
-
-
-
-#final map - ggmap defauls to terrain statemen
-ggmap(get_map(getbb("Wellington New Zealand"), maptype = "watercolor", source = 'osm'))+
-  geom_sf(data = streets$osm_lines,
-          inherit.aes = FALSE,
-          color = "black",
-          size = .4,
-          alpha = .8) +
-  coord_sf(xlim = c(174.61, 174.93 ), 
-           ylim = c(-41.44, -41.12),
-           expand = FALSE) 
-
-
-qmap("baylor university", zoom = 14, source = "osm")
-
-HoustonMap <- qmap("houston", zoom = 14,
-color = "bw", legend = "topleft")
-
-register_google(key = "AIzaSyCosQbm1ROEgXFoT_dDqOf1XnawTS5Ik8Y")
-
-##testing
-
-#our background map
-mad_map <- get_map(getbb("Auckland New Zealand"), maptype = "toner-background")
-cinema <- osmdata_sf(q) #need to use 
-
-#final map
-ggmap(mad_map)+
-  geom_sf(data = cinema$osm_points,
-          inherit.aes = FALSE,
-          colour = "#238443",
-          fill = "#004529",
-          alpha = .5,
-          size = 4,
-          shape = 21)+
-  labs(x = "", y = "")
-
-```
-
-
-```{r}
-##########################################################################
-
-distHaversine(df2[c("usual.residence.LONGITUDE", "usual.residence.LATITUDE")][50864:50870, ], df2[c("usual.work.LONGITUDE", "usual.work.LATITUDE")][50864:50870, ])
-
-distHaversine(c(174.7718,-41.30328), c(174.7747, -41.29102))
-distHaversine(c(174.7509,-36.80752), c(174.7564, -36.85896))
-
-#tail(df2)
-#dim(df2)
-
-
-distHaversine(data.matrix(df2[c("usual.residence.LONGITUDE", "usual.residence.LATITUDE")][50864:50870, ]), data.matrix(df2[c("usual.work.LONGITUDE", "usual.work.LATITUDE")][50864:50870, ]))
-# [1] 11101.706  1385.928 27904.047  3278.934  7612.498 46869.955  5747.331
-
-
-
-distHaversine( cbind(df2$usual.residence.LONGITUDE[50864:50870], df2$usual.residence.LATITUDE[50864:50870]), df2[c("usual.work.LONGITUDE", "usual.work.LATITUDE")][50864:50870, ])
-
-
-(as.matrix(df2[c("usual.residence.LONGITUDE", "usual.residence.LATITUDE")][50864:50870, ]))[1]
-```
-
-```{r}
-
-#install.packages("geosphere")
-library(geosphere)
-
-#getting the distance between two points using Haversine formula in meters
-
-distm(c(lon1, lat1), c(lon2, lat2), fun = distHaversine)
-
-distm(df2[c("usual.residence.LONGITUDE", "usual.residence.LATITUDE")], df2[c("usual.work.LONGITUDE", "usual.work.LATITUDE")], fun = distHaversine)
-
-distm(df2[c("usual.residence.LONGITUDE", "usual.residence.LATITUDE")][1:5, ], df2[c("usual.work.LONGITUDE", "usual.work.LATITUDE")][1:5, ], fun = distHaversine)
-
-(df2[c("usual.residence.LONGITUDE", "usual.residence.LATITUDE")])
-class(df2)
-xy <- rbind(c(0,0),c(90,90),c(10,10),c(-120,-45))
-distm(xy)
-xy2 <- rbind(c(0,0),c(10,-10))
-distm(xy, xy2)
-
-get_geo_distance = function(long1, lat1, long2, lat2) {
-  loadNamespace("purrr")
-  loadNamespace("geosphere")
-  longlat1 = purrr::map2(long1, lat1, function(x,y) c(x,y))
-  longlat2 = purrr::map2(long2, lat2, function(x,y) c(x,y))
-  distance_list = purrr::map2(longlat1, longlat2, function(x,y) geosphere::distHaversine(x, y))
-  distance_list
-    # This will return in meter as same way as distHaversine function. 
-  }
-
-test <- get_geo_distance(df2$usual.residence.LONGITUDE, df2$usual.residence.LATITUDE, df2$usual.work.LONGITUDE,  df2$usual.work.LATITUDE)
-
-df2[c("usual.residence.LONGITUDE", "usual.residence.LATITUDE")][1:5, ]
-  
-```
-```{r}
-install.packages("gmt")
-library(gmt)
-
-test <- geodist(df2$usual.residence.LATITUDE, df2$usual.residence.LONGITUDE, 
-                df2$usual.work.LATITUDE, df2$usual.work.LONGITUDE, units="km") * 1000
-
-df2[13, ]
-df2[13, 21]
-
-
-distm(c(df2[17, 21], df2[17, 20]), c(df2[17, 23], df2[17, 22]), fun = distHaversine)
-
-
-test[17]
-
-```
-
-
-## plotting it
-
-```{r}
-library(sf)
-library(ggplot2)
-
-my_sf <- st_as_sf(df2, coords = c("usual.residence.LONGITUDE", "usual.residence.LATITUDE")
-
-my_sf <- st_set_crs(my_sf, crs = 4326)
-
-#Plot it:
-
-ggplot(my_sf)
-
-+ 
-  geom_sf(aes(color = cluster))
-
-
-library(sf)
-library(ggplot2)
-
-my_sf <- st_as_sf(df2, coords = c('LON', 'LAT')
-
-my_sf <- st_set_crs(my_sf, crs = 4326)
-
-#Plot it:
-
-ggplot(my_sf) + 
-  geom_sf(aes(color = cluster))
-```
-
-
-
-### testing trafficalmr app
-
-```{r}
-
-#remotes::install_github("saferactive/trafficalmr")
-
-library(trafficalmr)
-road_data = tc_data_osm
-nrow(tc_data_osm)
-str(tc_data_osm)
-
-##preview data
-head(road_data)
-str(road_data)
-
-road_data_major = trafficalmr::osm_main_roads(road_data)
-nrow(road_data_major) # find the main roads
-#> [1] 125
-road_data_junctions = osm_get_junctions(road_data_major)
-road_data_clusters = cluster_junction(road_data_junctions, dist = 30)
-plot(road_data$geometry, col = "grey")
-plot(road_data_clusters, add = TRUE)
-#> Warning in plot.sf(road_data_clusters, add = TRUE): ignoring all but the first
-#> attribute
-plot(road_data_junctions, add = TRUE)
-plot(road_data_major$geometry, col = "black", add = TRUE)
-
-```
-More information on OSM data - traffic calming
-
-https://github.com/saferactive/trafficalmr/blob/master/R/tc_get_osm.R
-
-```{r}
-
-## tc_get_osm function
-## function used to get traffic calming interventions from OpenStreetMap
-traffic_calming_points = tc_get_osm(bbox = "Auckland") #tc_get_osm is from osm_data
-
-mapview::mapview(traffic_calming_points["traffic_calming"])
-
-?mapview
-
-test <- traffic_calming_points["traffic_calming"]
-
-test
-
-class(test[[2]])
-
-```
-
-###Recoding data
-https://saferactive.github.io/trafficalmr/
-
-```{r}
-
-tc_recode_vehicle_type(c("Bus long", "Motorcycle long name"))
-
-```
-```{r}
-v = stats19::get_stats19(year = 2018, type = "vehicles")
-
-str(v)
-
-dim(v)
-
-class(v)
-
-v$vehicle_type_simple = tc_recode_vehicle_type(v$vehicle_type)
-barplot(table(v$vehicle_type))
-barplot(table(v$vehicle_type_simple))
-
-table(v$vehicle_type_simple)
-
-```
-
-
-```{r}
 ## convert from NZTM projection (EPSG:2193) to lat/lon
 ## https://www.linz.govt.nz/data/linz-data-service/guides-and-documentation/using-lds-xyz-services-in-leaflet
+
+#install.packages("proj4")
+
 loc = proj4::project(cas.data[1:2], "+proj=tmerc +lat_0=0 +lon_0=173 +k=0.9996 +x_0=1600000 +y_0=10000000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs", inv=TRUE)
 
 ```
 
+# Plotting geospatial data
+
+### Plotting crashed data points into open street map tile
 ```{r}
-## install.packages("snippets",,"https://rforge.net")
+
+#install.packages("snippets",,"http://rforge.net/",type="source")
+library(snippets)
+#install.packages("png")
+library(png)
+
 par(mar=rep(0,4))
 plot(loc$x, loc$y, pch='.', asp=1/cos(-40.6/180*pi), ty='n')
-snippets::osmap()
-points(loc$x, loc$y, pch='.')
+#overlay with oopen street map
+osmap()
+points(loc$x, loc$y, pch='.',col = 'red')
+
 ```
 
+### Plotting crashes from 2016 to 2019 in Auckland
+
 ```{r}
+
+#auckland geo spatial boundaries
 q = list(x = c(174.149667174548, 175.383632470626), y = c(-36.554874067828, 
 -36.991016113938))
-par(mar=rep(0,4))
-plot(loc$x, loc$y, pch='.', asp=1/cos(-40.6/180*pi), ty='n', xlim=range(q$x), ylim=range(q$y))
-snippets::osmap()
-points(loc$x, loc$y, pch='.')
-```
 
-```{r}
+
 akl = loc$x > range(q$x)[1] & loc$x < range(q$x)[2] & loc$y > range(q$y)[1] & loc$y < range(q$y)[2] & cas.data$crashYear %in% 2016:2019
 akl[is.na(akl)] = FALSE
 
 sum(akl)
 mean(akl)
-```
 
-```{r}
-par(mar=rep(0,4))
+#usual residence location points
 g = aggregate(df2$Total, list(lon=df2$usual.residence.LONGITUDE,lat=df2$usual.residence.LATITUDE), sum)
 plot(0, 0, pch='.', xlim=range(q$x), ylim=range(q$y), asp=1/cos(-40.6/180*pi), ty='n')
-snippets::osmap(cache.dir = "/tmp")
-points(g$lon, g$lat,pch=19,cex=sqrt(g$x/max(g$x))*1.2,col="#00000080")
-```
 
-```{r}
-par(mar=rep(0,4))
+#usual work location points
 g2 = aggregate(df2$Total, list(lon=df2$usual.work.LONGITUDE,lat=df2$usual.work.LATITUDE), sum)
+
+#plotting it
+par(mar=rep(0,4))
 plot(0, 0, pch='.', xlim=range(q$x), ylim=range(q$y), asp=1/cos(-40.6/180*pi), ty='n')
-snippets::osmap(cache.dir = "/tmp")
+snippets::osmap()
+
+#RED - usual work, 
 points(g$lon, g$lat,pch=19,cex=sqrt(g$x/max(g$x))*1.2,col="#ff000040")
 points(g2$lon, g2$lat,pch=19,cex=sqrt(g2$x/max(g2$x))*1.5,col="#0000ff80")
+legend("topright", legend=c("Residence", "Work"),
+       col=c("red", "blue"), pch = 16, cex=1, box.col="white")
+
 ```
+
+### Using Tessaslation to group centroids of usual residence points
+
 ```{r}
+
 ga = g[g$lon > range(q$x)[1] & g$lon < range(q$x)[2] & g$lat > range(q$y)[1] & g$lat < range(q$y)[2], ]
 ## warning ! bad coordinates - since lat/lon aspect ration is not 1!! jsut a hack ;)
+
+#used the deldir package 
+#installed.packages("deldir")
 d = deldir::deldir(ga$lon, ga$lat)
 plot(0, 0, pch='.', xlim=range(q$x), ylim=range(q$y), asp=1/cos(-40.6/180*pi), ty='n')
-snippets::osmap(cache.dir = "/tmp")
+snippets::osmap()
 points(g$lon, g$lat,pch=19,cex=sqrt(g$x/max(g$x))*1.2,col="#ff000040")
 points(g2$lon, g2$lat,pch=19,cex=sqrt(g2$x/max(g2$x))*1.5,col="#0000ff80")
 plot(d, add=TRUE, wlines="tess", pch='.')
+
 ```
+
