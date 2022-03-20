@@ -1,0 +1,381 @@
+
+#Finding the Starting and ending points on Meshblock Level
+
+- we wanted to pick the mb with the most travellers for each side
+
+### Finding starting points MB 
+
+```{r}
+
+library(readxl)
+library(tidyr)
+library(dplyr)
+
+#usual residence mb to wpsa2
+urmb_by_wpsa2 <- read.csv("Data/Stat NZ Data/2018 urmb by wpsa2.csv")
+
+#sa2 to MB mapping provided by StatsNZ
+key <- read_xlsx("Data/Stats NZ Geographic Key.xlsx", 
+           sheet = "Geographic Key")
+
+```
+
+```{r}
+
+#we are only interested on car, truck or van and total
+urmb_by_wpsa2 <- urmb_by_wpsa2[urmb_by_wpsa2$MMTW %in% c("Car, truck or van", "Total"), ]
+
+#replacing all "..C" with NA
+urmb_by_wpsa2[urmb_by_wpsa2 == "..C"] <- NA
+
+#https://www.storybench.org/pivoting-data-from-columns-to-rows-and-back-in-the-tidyverse/
+
+#pivoting the data so SA2 code columns becomes rows making the dataframe longer
+urmb_by_wpsa2_final <- urmb_by_wpsa2 %>% 
+   tidyr::pivot_longer(
+     cols = starts_with("X"), 
+     names_to = "SA2_workplace", 
+     values_to = "weight", 
+     names_prefix = "X") 
+     
+#how big is our df
+dim(urmb_by_wpsa2_final) #7.8 million rows
+
+#we are only interested on some columns
+#removing rows where the weight is NAs, when there is no commuters between the an MB usual residence and SA2 workplace pair
+urmb_by_wpsa2_final <- urmb_by_wpsa2_final[!is.na(urmb_by_wpsa2_final$weight), 
+                                           c(1:2, 4:6)]
+
+#how big is our df after removing the NAs
+dim(urmb_by_wpsa2_final) #27K rows
+
+
+```
+
+
+```{r}
+
+#join with usual residence MB with geographic key
+
+#lookat key values
+str(key)
+
+#need to change data type of MBs so we can join it with df
+key$MB2018_V1_00 <- as.character(key$MB2018_V1_00)
+
+
+```
+
+Joining geographic data
+
+```{r}
+
+#joining df with geographic key using MBs, we are only interested 
+#in the SA2 codes level
+urmb_by_wpsa2_final_2 <- urmb_by_wpsa2_final %>% 
+  left_join(key[, c(1,3)], by = c("Area_usualresidence" = "MB2018_V1_00"))
+
+#checking no NAs on weight
+sum(is.na(urmb_by_wpsa2_final_2$weight))
+
+#converting weight from character to numeric so we can perform calculations
+urmb_by_wpsa2_final_2$weight <-  as.numeric(urmb_by_wpsa2_final_2$weight, na.rm = TRUE)
+
+#group by SA2 residence and SA2 workplace to get the total weight and join back stats NZ data
+d <- urmb_by_wpsa2_final_2 %>% 
+  group_by(`Statistical area 2 code (2018 areas)`, SA2_workplace) %>% 
+  summarise(total_weight = sum(weight)) %>% 
+  right_join(urmb_by_wpsa2_final_2, by = c("Statistical area 2 code (2018 areas)", "SA2_workplace")) %>% 
+  mutate(prob = weight/total_weight) 
+  
+  
+#getting the max weight between SA2 res and SA2 workplace pair, use this to filter the df
+d2 <-  d %>%  
+  group_by(`Statistical area 2 code (2018 areas)`, SA2_workplace) %>% 
+  summarise(max = max(weight)) %>% 
+  inner_join(d, by = c("Statistical area 2 code (2018 areas)", "SA2_workplace")) %>% 
+  filter(max == weight) 
+
+
+#handling situations where weight is the same for more than one SA2 res and 
+#SA2 workplace pair by assigning a random number
+
+#setting the seed and create a column that assigns a random number
+set.seed(16)
+d2$random_gen = runif(nrow(d2), min = 0, max = 1)
+
+
+#pick the SA2 res and SA2 work with the max random number so we have 1-1 relationship
+#between SA2 res and SA2 work
+usual_res_mapping <-  d2 %>%  
+  group_by(`Statistical area 2 code (2018 areas)`, SA2_workplace,) %>% 
+  summarise(random_gen = max(random_gen)) %>% 
+   inner_join(d2, by = c("Statistical area 2 code (2018 areas)", "SA2_workplace", "random_gen")) 
+
+#double checking there are no duplicates
+which(duplicated(paste(usual_res_mapping$`Statistical area 2 code (2018 areas)`, 
+                       usual_res_mapping$SA2_workplace, sep = "-")))
+
+
+```
+### Finding ending points MB
+
+```{r}
+
+#usual work mb to ursa2 data
+wpmb_by_ursa2 <- read.csv("Data/Stat NZ Data/2018 wpmb by ursa2.csv")
+
+
+#we are only interested on car, truck or van and total
+wpmb_by_ursa2 <- wpmb_by_ursa2[wpmb_by_ursa2$MMTW %in% c("Car, truck or van"), ]
+
+
+#replacing all "..C" with NA
+wpmb_by_ursa2[wpmb_by_ursa2 == "..C"] <- NA
+
+#https://www.storybench.org/pivoting-data-from-columns-to-rows-and-back-in-the-tidyverse/
+
+#pivoting the data so SA2 code usual residence columns becomes rows making 
+#the dataframe longer
+wpmb_by_ursa2_final <- wpmb_by_ursa2 %>% 
+   tidyr::pivot_longer(
+     cols = starts_with("X"), 
+     names_to = "SA2_Usual_Res", 
+     values_to = "weight", 
+     names_prefix = "X") 
+
+#renaming are usual res to MB workplace
+names(wpmb_by_ursa2_final)[1] <- "MB_workplace"
+
+#how big is our df
+dim(wpmb_by_ursa2_final) #approx 8 million rows
+
+#we are only interested on some columns
+#removing rows where the weight is NAs, there is when no commuters between 
+#the SA2 usual residence and MB workplace pair
+wpmb_by_ursa2_final <- wpmb_by_ursa2_final[!is.na(wpmb_by_ursa2_final$weight), 
+                                           c(1:2, 4:6)]
+
+#how big is our df after removing the df
+dim(wpmb_by_ursa2_final) #approx 23k rows
+
+```
+
+```{r}
+
+#joining df with geographic key using MBs, we are only interested 
+#in the SA2 codes in key df
+wpmb_by_ursa2_final_2 <- wpmb_by_ursa2_final %>% 
+  inner_join(key[, c(1,3)], by = c("MB_workplace" = "MB2018_V1_00"))
+
+#checking no NAs on weight
+sum(is.na(wpmb_by_ursa2_final_2$weight))
+
+#converting weight from character to numeric so we can perform calculations
+wpmb_by_ursa2_final_2$weight <-  as.numeric(wpmb_by_ursa2_final_2$weight, na.rm = TRUE)
+
+#group by SA2 residence and SA2 workplace to get the total weight and join back stats NZ data
+d <- wpmb_by_ursa2_final_2 %>% 
+  group_by(`Statistical area 2 code (2018 areas)`, SA2_Usual_Res) %>% 
+  summarise(total_weight = sum(weight)) %>% 
+  right_join(wpmb_by_ursa2_final_2, by = c("Statistical area 2 code (2018 areas)", "SA2_Usual_Res")) %>% 
+  mutate(prob = weight/total_weight) 
+  
+  
+#getting the max weight between SA2 res and SA2 workplace pair, use this to filter the df
+d2 <-  d %>%  
+  group_by(`Statistical area 2 code (2018 areas)`, SA2_Usual_Res) %>% 
+  summarise(max = max(weight)) %>% 
+  inner_join(d, by = c("Statistical area 2 code (2018 areas)", "SA2_Usual_Res")) %>% 
+  filter(max == weight) 
+
+#double checking there are no duplicates
+length(which(duplicated(paste(d2$`Statistical area 2 code (2018 areas)`, 
+                       d2$SA2_Usual_Res, sep = "-"))))
+
+
+#handling situations where weight is the same for more than one SA2 res and 
+#SA2 workplace pair by assigning a random number
+
+#setting the seed and create a column that assigns a random number
+set.seed(16)
+d2$random_gen = runif(nrow(d2), min = 0, max = 1)
+
+
+#pick the SA2 res and SA2 work with the max random number so we have 1-1 relationship
+#between SA2 res and SA2 work
+workplace_mapping <-  d2 %>%  
+  group_by(`Statistical area 2 code (2018 areas)`, SA2_Usual_Res,) %>% 
+  summarise(random_gen = max(random_gen)) %>% 
+   inner_join(d2, by = c("Statistical area 2 code (2018 areas)", "SA2_Usual_Res", "random_gen")) 
+
+#double checking there are no duplicates
+which(duplicated(paste(usual_res_mapping$`Statistical area 2 code (2018 areas)`, 
+                       usual_res_mapping$SA2_workplace, sep = "-")))
+
+
+```
+### Adding MB geospatial data on the mapping we created above
+
+```{r}
+
+#loading the geo spatial data for MBs
+mb_geo_data <- read.csv("Data/meshblock-2018-centroid-inside.csv")
+
+#change the data type to character so we can join it
+mb_geo_data$MB2018_V1_00 <-  as.character(mb_geo_data$MB2018_V1_00 )
+  
+head(mb_geo_data[, c(2, 7:8)])
+
+str(mb_geo_data[, c(2, 7:8)])
+
+names(mb_geo_data[, c(2, 7:8)])
+
+str(usual_res_mapping)
+names(usual_res_mapping)
+
+usual_res_mapping <- usual_res_mapping %>% 
+  left_join(mb_geo_data[, c(2, 7:8)], by = c("Area_usualresidence" = "MB2018_V1_00"))
+
+workplace_mapping <- workplace_mapping %>% 
+  left_join(mb_geo_data[, c(2, 7:8)], by = c("MB_workplace" = "MB2018_V1_00"))
+
+#checking no NULL latitude and longitude MB values after join
+
+sum(is.na(usual_res_mapping$LATITUDE))
+sum(is.na(workplace_mapping$LATITUDE))
+
+
+
+```
+
+### Appending the MBs starting and ending point to JTW data 
+
+```{r}
+
+##Read journey to work Data 2018
+jtw_data <- read.csv("C:/Users/kathl/Documents/University of Auckland/Mprof Data Science/COMPSCI 791 Industry Research Project - MoT Trafficalmr Package in R/MoT_road_safety_proj/MoT Road Safety Data R Package/data/2018-census-main-means-of-travel-to-work-by-statistical-area.csv",
+                     fileEncoding="UTF-8-BOM")
+
+names(key)[8] <- "Territorial_authority_desc"
+
+#grouping by SA2 and territorial auth district
+key_2 <- key[, c(3,8)] %>% 
+group_by(`Statistical area 2 code (2018 areas)`, Territorial_authority_desc) %>% 
+summarise(n = n())
+
+#adding territorial district
+jtw_data <- jtw_data %>% 
+  left_join(key_2[, c(1:2)], by = c("SA2_code_usual_residence_address" ="Statistical area 2 code (2018 areas)")) 
+
+
+#number of rows that drive to work is approx 40k
+#did not include Passenger_in_a_car_truck_van_or_company_bus
+dim(jtw_data[(jtw_data$Drive_a_company_car_truck_or_van > 0 | 
+  jtw_data$Drive_a_private_car_truck_or_van > 0), ])
+
+
+#changing below columns to character
+jtw_data[c("SA2_code_usual_residence_address", "SA2_code_workplace_address" )] <- 
+sapply(jtw_data[c("SA2_code_usual_residence_address", "SA2_code_workplace_address" )],
+         as.character)
+
+#adding the usual residence mapping
+test <- jtw_data[(jtw_data$Drive_a_company_car_truck_or_van > 0 | 
+  jtw_data$Drive_a_private_car_truck_or_van > 0), ] %>% 
+  left_join(usual_res_mapping[, c(1:3, 5:6, 8:12)], 
+            by = c( "SA2_code_workplace_address" = "SA2_workplace", 
+                   "SA2_code_usual_residence_address" = "Statistical area 2 code (2018 areas)"))
+
+#most NAs are non auckland
+table(test[is.na(test$LATITUDE), ]$Territorial_authority_desc)
+
+test[(is.na(test$LATITUDE) & test$Territorial_authority_desc == "Auckland"), ]
+
+test[(!is.na(test$LATITUDE) & test$Territorial_authority_desc == "Auckland"), ]
+
+#there are 16.5K rows where its in auckland and commuter drove to work
+dim(test[test$Territorial_authority_desc == "Auckland", ])
+
+dim(test[((test$Drive_a_company_car_truck_or_van > 0) | 
+  (test$Drive_a_private_car_truck_or_van > 0)) & test$Territorial_authority_desc == "Auckland", ])
+
+write.csv(usual_res_mapping, "Data/usual_res_mapping.csv")
+write.csv(workplace_mapping, "Data/workplace_mapping.csv")
+
+
+usual_res_mapping
+
+str(jtw_data)
+
+test <- jtw_data %>% 
+  left_join(usual_res_mapping[, c(1:3, 5:6, 8:12)], 
+            by = c( "SA2_code_workplace_address" = "SA2_workplace", 
+                   "SA2_code_usual_residence_address" = "Statistical area 2 code (2018 areas)"))
+
+
+
+
+str(jtw_data)
+str(usual_res_mapping)
+dim(test)
+dim(test[!is.na(test$Area_usualresidence), ])
+
+
+dim(names(usual_res_mapping[, c(1:3, 5:6, 8:12)]))
+
+
+"Statistical area 2 code (2018 areas)", "SA2_workplace"                       
+ [3] "random_gen"                           "max"                                 
+ [5] "total_weight"                         "Area_usualresidence"                 
+ [7] "MMTW"                                 "New.Zealand"                         
+ [9] "weight"                               "prob"                                
+[11] "LATITUDE"                             "LONGITUDE"
+
+c(1:3, 5:6, 8:12)
+names(usual_res_mapping)
+names(jtw_data)
+
+```
+
+```{r}
+
+jtw_driving_akl <- jtw_data[(jtw_data$Drive_a_company_car_truck_or_van > 0 | 
+  jtw_data$Drive_a_private_car_truck_or_van > 0) & 
+    jtw_data$Territorial_authority_desc == 'Auckland', ] %>% 
+  left_join(usual_res_mapping[, c(1:3, 5:6, 8:12)], 
+            by = c( "SA2_code_workplace_address" = "SA2_workplace", 
+                   "SA2_code_usual_residence_address" = "Statistical area 2 code (2018 areas)"))
+
+
+sum(!(unique(jtw_driving_akl$SA2_code_usual_residence_address) %in% unique(urmb_by_wpsa2_final_2$`Statistical area 2 code (2018 areas)`)))
+
+
+names(urmb_by_wpsa2_final_2)
+
+urmb_by_wpsa2_final_2$id <- paste(urmb_by_wpsa2_final_2$`Statistical area 2 code (2018 areas)`,
+                                  urmb_by_wpsa2_final_2$SA2_workplace, sep = "_")
+
+dim(jtw_driving_akl)
+
+dim(jtw_driving_akl[!paste(jtw_driving_akl$SA2_code_usual_residence_address, 
+jtw_driving_akl$SA2_code_workplace_address, sep = "_") %in%
+  paste(urmb_by_wpsa2_final_2$`Statistical area 2 code (2018 areas)`,
+                                  urmb_by_wpsa2_final_2$SA2_workplace, sep = "_"), ])
+
+test2 <- jtw_driving_akl[!paste(jtw_driving_akl$SA2_code_usual_residence_address, 
+jtw_driving_akl$SA2_code_workplace_address, sep = "_") %in%
+  paste(urmb_by_wpsa2_final_2$`Statistical area 2 code (2018 areas)`,
+                                  urmb_by_wpsa2_final_2$SA2_workplace, sep = "_"), ]
+
+
+#only 3217 can be found in the data
+nrow(jtw_driving_akl) - sum(!paste(jtw_driving_akl$SA2_code_usual_residence_address, 
+jtw_driving_akl$SA2_code_workplace_address, sep = "_") %in%
+  paste(urmb_by_wpsa2_final_2$`Statistical area 2 code (2018 areas)`,
+                                  urmb_by_wpsa2_final_2$SA2_workplace, sep = "_"))
+
+
+
+```
+
