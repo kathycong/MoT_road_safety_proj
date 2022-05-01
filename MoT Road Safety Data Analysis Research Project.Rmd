@@ -1,0 +1,1868 @@
+
+# MoT Road Safety Data Analysis Research Project
+
+The aim of this project is to adapt `trafficalmr` utilities and methodologies 
+for New Zealand using open data to better understand road safety outcome
+
+This project intends to add value to road safety policies that can help save 
+lives of New Zealanders through better safety outcomes for active transport modes.
+
+Objectives of the project:
+  - processing data 
+  - policy analysis use to developed data foundations to estimate the casualty 
+  rate per billion kilometers for walking and cycling during journey to work commutes.
+  - Data visualisation and data communication
+  
+Desired Output:
+  - R functions for processing CAS, census journey to work and transport relevant
+    openstreetmap data using trafficalmr as a guide
+  
+  - Estimating casualty rates per billion kilometres for cycling and walking
+  
+## Research Landscape
+
+## Policy Drivers
+
+## Methodology
+
+## 1. Required libraries
+
+```{r}
+
+library(sf)
+library(ghroute)
+router(osm.file = "~/Documents/University of Auckland/COMPSCI 791 Research Project/mot_road_safety_project/osm/new-zealand-latest.osm.pbf")
+library(leaflet)
+library(mapview)
+library(readxl)
+library(dplyr)
+library(ggplot2)
+
+```
+  
+## 2. Data 
+
+1. CAS Data
+2. Stats NZ Census Data
+3. JTW Data 
+
+### 2a. Geographic Key
+
+```{r}
+
+## SA2 to MB mapping provided by StatsNZ
+key <- read_xlsx("../data/Stats NZ Geographic Key.xlsx", 
+           sheet = "Geographic Key")
+
+## need to change data type of MBs so we can join it with df
+key$MB2018_V1_00 <- as.character(key$MB2018_V1_00)
+
+## correcting Territorial auth desc name
+names(key)[8] <- "Territorial_auth_desc"
+
+## grouping by SA2 and territorial auth district to remove duplicates
+key_2 <- key[, c(3,8)] %>% 
+  group_by(`Statistical area 2 code (2018 areas)`, Territorial_auth_desc) %>% 
+  summarise(n = n()) %>% 
+  mutate(`Statistical area 2 code (2018 areas)` = 
+           as.integer(`Statistical area 2 code (2018 areas)`))
+
+```
+
+### 2b. JTW data and cas data
+
+```{r}
+
+## Read journey to work Data 2018
+jtw_data <- read.csv("../data/2018-census-main-means-of-travel-to-work-by-statistical-area.csv", fileEncoding="UTF-8-BOM")
+
+## only interested in Auckland where the mode of transport is driving
+## and SA2 residence is not teh same as SA2 workplace 
+jtw_driving_akl <- jtw_data[(jtw_data$Drive_a_company_car_truck_or_van > 0 | 
+  jtw_data$Drive_a_private_car_truck_or_van > 0), ] %>% 
+  left_join(key_2[, 1:2], by = c("SA2_code_usual_residence_address" = 
+                                   "Statistical area 2 code (2018 areas)")) %>%
+  filter(Territorial_auth_desc == "Auckland" & 
+           SA2_code_usual_residence_address != SA2_code_workplace_address)
+
+#save(jtw_driving_akl, file = "jtw_driving_akl.rda")
+
+```
+
+
+
+```{r}
+
+#checking data quality
+
+jtw_driving_akl[jtw_driving_akl$SA2_name_usual_residence_address == 'Pukekohe Central', ]
+
+```
+
+### 2c. cas data
+
+```{r}
+## CAS data
+cas_data <- readRDS("../data/Crash_Analysis_System_(CAS)_data.rds")
+
+## create a new column called non_injury_crash
+cas_data$non_injury_crash <- ifelse(cas_data$crashSeverity == 'Non-Injury Crash', 1, 0)
+
+table(cas_data$crashSeverity)
+
+## total crashes
+cas_data$total <- cas_data$fatalCount + cas_data$minorInjuryCount + cas_data$seriousInjuryCount + cas_data$non_injury_crash
+
+cas_data_proj <- st_as_sf(cas_data, coords = c("X", "Y"), crs = 2193)
+
+cas_data_geo <- st_transform(cas_data_proj, crs = 4326)
+
+
+cas_data_akl_proj <- st_as_sf(cas_data[cas_data$region == 'Auckland Region',], coords = c("X", "Y"), crs = 2193)
+
+cas_data_akl_geo <- st_transform(cas_data_akl_proj, crs = 4326)
+
+##filtering the data to serious and fatal crashes in 2018 around the Auckland Region
+cas_data_akl_2018_geo <-  cas_data_akl_geo[(cas_data_akl_geo$crashYear == 2018 & cas_data_akl_geo$region == "Auckland Region"), ]
+
+#cas_data_akl_2018 <-  cas_data[(cas_data$crashSeverity %in% c("Serious Crash", "Fatal Crash")
+#    & cas_data$crashYear == 2018 & cas_data$region == "Auckland Region"), ]
+
+
+cas_data[cas_data$total <= 0,] 
+
+cas_data[is.na(cas_data$total), ]
+
+sum(cas_data$crashSeverity == 'Non-Injury Crash')
+
+sum(cas_data$non_injury_crash)
+
+```
+
+
+### 2d. getting SA2 clipped
+
+```{r}
+
+load("~/Documents/University of Auckland/COMPSCI 791 Research Project/mot_road_safety_project/motroadsafety/data/sa2_clipped_geo_akl.rda")
+
+
+```
+
+
+
+## 3. Data Processing/Modelling
+
+
+### 3a. Getting the routes
+```{r}
+
+## getting the total driving commuters and creating a new column
+jtw_driving_akl$total_driving_travellers <- 
+  ifelse(jtw_driving_akl$Drive_a_company_car_truck_or_van >0, jtw_driving_akl$Drive_a_company_car_truck_or_van, 0) +
+  ifelse(jtw_driving_akl$Drive_a_private_car_truck_or_van >0, jtw_driving_akl$Drive_a_private_car_truck_or_van, 0) 
+
+##running get_routes
+jtw_akl_routes <- get_routes(as.matrix(jtw_driving_akl[names(jtw_driving_akl)[21:24]]))
+
+##selecting only important column
+jtw_driving_akl_2 <- jtw_driving_akl[c(1:8, 25)]
+
+## adding routes to data
+jtw_driving_akl_with_routes <- cbind(jtw_akl_routes, jtw_driving_akl_2)
+
+head(jtw_driving_akl_with_routes)
+
+rm("jtw_driving_akl_2")
+
+```
+
+### 3b getting the distance travelled
+
+```{r}
+
+get_dist_travel
+
+```
+
+
+## 4. CAS Analysis & Validating the Data
+
+### 4a. Validating the Data
+
+- Using Auckland Transport flow data
+
+Interested in both directions of traffic
+
+
+
+```{r}
+
+at_traffic_count <- 
+read_xlsx("../data/at-website-traffic-counts-2012-2021.xlsx", 
+           sheet = "July 2012 to May 2021",
+          skip = 1)
+
+at_traffic_count$year = format(at_traffic_count$`Count Start Date`, format = "%Y")
+
+## we are only interested traffic at 2018
+at_traffic_count_2018 <- at_traffic_count[at_traffic_count$year == 2018 &
+                                          !(is.na(at_traffic_count$`Description (location of traffic count)`)), ]
+
+## we need the coordinates, thus extracting easting and northing from directions column
+at_traffic_count_2018$Easting <- substr(at_traffic_count_2018$`Description (location of traffic count)`, 2, 8)
+
+at_traffic_count_2018$Northing <- substr(at_traffic_count_2018$`Description (location of traffic count)`, 12, 18)
+
+## need to set up coordinates, projected
+at_traffic_count_2018_proj <- st_as_sf(at_traffic_count_2018, coords = c("Easting", "Northing"), crs = 2193)
+
+##transform coordinates  
+at_traffic_count_2018_geo <- st_transform(at_traffic_count_2018_proj, crs = 4326)
+
+mapview(at_traffic_count_2018_geo, alpha.region = 0.5, alpha = 0.1)
+
+#there are 18 characters in Descrition
+#nchar(at_traffic_count_2018$`Description (location of traffic count)`[1])
+
+## tidying up
+rm("at_traffic_count")
+
+
+```
+
+testing with 5 meters radius
+
+```{r}
+
+test <- 
+  at_traffic_count_2018_proj[st_is_within_distance(at_traffic_count_2018_proj,
+                        st_transform(jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$SA2_name_usual_residence_address == 'Pukekohe Central', ], crs = 2193),
+                        dist = 5, sparse = FALSE), ]
+
+test <- st_transform(test, crs = 4326)
+
+mapview(jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$SA2_name_usual_residence_address == 'Pukekohe Central', ], 
+        layer.name = "Pukekohe Central to Shortland St Route",
+        cex = 6) +
+  mapview(test, 
+          col.regions = 'red', 
+          layer.name = "2018 Traffic Counter")
+                        
+  
+```
+
+testing with 10 meters radius
+
+
+```{r}
+test <- 
+  at_traffic_count_2018_proj[st_is_within_distance(at_traffic_count_2018_proj,
+                        st_transform(jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$SA2_name_usual_residence_address == 'Pukekohe Central', ], crs = 2193),
+                        dist = 10, sparse = FALSE), ]
+
+test <- st_transform(test, crs = 4326)
+
+mapview(jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$SA2_name_usual_residence_address == 'Pukekohe Central', ], 
+        layer.name = "Pukekohe Central to Shortland St Route",
+        cex = 6) +
+  mapview(test, 
+          col.regions = 'red', 
+          layer.name = "2018 Traffic Counter")
+                        
+```
+
+testing with 20 meter radius
+
+```{r}
+
+test <- 
+  at_traffic_count_2018_proj[st_is_within_distance(at_traffic_count_2018_proj,
+                        st_transform(jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$SA2_name_usual_residence_address == 'Pukekohe Central', ], crs = 2193),
+                        dist = 20, sparse = FALSE), ]
+
+test <- st_transform(test, crs = 4326)
+
+mapview(jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$SA2_name_usual_residence_address == 'Pukekohe Central', ], 
+        layer.name = "Pukekohe Central to Shortland St Route",
+        cex = 6) +
+  mapview(test, 
+          col.regions = 'red', 
+          layer.name = "2018 Traffic Counter")
+                        
+```
+
+**New Zealand road widths**
+https://www.drivingtests.co.nz/resources/are-wider-roads-safer-and-how-are-road-widths-decided/
+
+
+```{r}
+
+## we need projected data so that distance is in meters
+jtw_driving_akl_with_routes_proj <- st_transform(jtw_driving_akl_with_routes, 
+                                                 crs = 2193)
+
+## visualise using mapview()
+mapview(at_traffic_count_2018_proj[2, ], col.regions = 'red') +
+  
+  mapview(jtw_driving_akl_with_routes_proj[st_is_within_distance(jtw_driving_akl_with_routes_proj,
+                      at_traffic_count_2018_proj[2, ],
+                      dist = 20, 
+                      sparse = FALSE) &
+  !st_is_empty(jtw_driving_akl_with_routes_proj), ]) ## excluding source-dest with no routes
+
+
+dim(jtw_driving_akl_with_routes_proj[st_is_within_distance(jtw_driving_akl_with_routes_proj,
+                      at_traffic_count_2018_proj[2, ],
+                      dist = 20, 
+                      sparse = FALSE) &
+  !st_is_empty(jtw_driving_akl_with_routes_proj), ])
+
+## visualing using leaflet()
+
+  leaflet()%>% 
+   addTiles() %>% 
+    addPolylines(data = st_geometry(st_transform(jtw_driving_akl_with_routes_proj[st_is_within_distance(jtw_driving_akl_with_routes_proj,
+                      at_traffic_count_2018_proj[2, ],
+                      dist = 20, 
+                      sparse = FALSE) &
+  !st_is_empty(jtw_driving_akl_with_routes_proj), ], crs = 4326))) %>% 
+          addCircles( lat = st_coordinates(st_transform(at_traffic_count_2018_proj[2, ], 
+                                                        crs = 4326))[1, "Y"], 
+                  lng = st_coordinates(st_transform(at_traffic_count_2018_proj[2, ], 
+                                                    crs = 4326))[1, "X"],
+                  col = 'green', 
+                  radius = 20) %>% 
+    addCircles(data = st_geometry(at_traffic_count_2018_geo[2, ]), color = "red")
+  
+## route 1488
+    leaflet()%>% 
+   addTiles() %>% 
+    addPolylines(data = st_geometry(st_transform(jtw_driving_akl_with_routes_proj[st_is_within_distance(jtw_driving_akl_with_routes_proj,
+                      at_traffic_count_2018_proj[1488, ],
+                      dist = 20, 
+                      sparse = FALSE) &
+  !st_is_empty(jtw_driving_akl_with_routes_proj), ], crs = 4326))) %>% 
+          addCircles( lat = st_coordinates(st_transform(at_traffic_count_2018_proj[1488, ], 
+                                                        crs = 4326))[1, "Y"], 
+                  lng = st_coordinates(st_transform(at_traffic_count_2018_proj[1488, ], 
+                                                    crs = 4326))[1, "X"],
+                  col = 'green', 
+                  radius = 20) %>% 
+    addCircles(data = st_geometry(at_traffic_count_2018_geo[1488, ]), color = "red")
+    
+  
+```
+
+#### i. calculating the total routes per traffic counter
+
+```{r}
+
+## counting number of routes within 20m of a traffic counter to validate routes generated
+
+## this only counts individual routes, need to multiply by the number of commuters
+at_traffic_count_2018_proj$route_within_20m <- lengths(st_is_within_distance(at_traffic_count_2018_proj,
+                      jtw_driving_akl_with_routes_proj[(!st_is_empty(jtw_driving_akl_with_routes_proj)), ],
+                      dist = 20))
+
+
+
+names(at_traffic_count_2018_proj)
+
+head(at_traffic_count_2018_proj)
+
+plot(density(at_traffic_count_2018_proj$route_within_20m))
+
+hist(at_traffic_count_2018_proj$route_within_20m, breaks = 100)
+
+
+```
+
+#### ii. routes that intersected * total commuters
+
+
+```{r}
+## removing rows with no routes for simplicity
+jtw_driving_akl_with_routes_proj_cleaned <- jtw_driving_akl_with_routes_proj[(!st_is_empty(jtw_driving_akl_with_routes_proj)), ]
+
+
+total_drivers_within_20m <- lapply(seq.int(nrow(at_traffic_count_2018_proj)), 
+       function(i){
+         sum(jtw_driving_akl_with_routes_proj_cleaned[which(st_is_within_distance(jtw_driving_akl_with_routes_proj_cleaned,
+                      at_traffic_count_2018_proj[i, ],
+                      dist = 20, 
+                      sparse = FALSE))
+                      , ]$total_driving_travellers)})
+
+
+at_traffic_count_2018_proj$total_drivers_within_20m <- unlist(total_drivers_within_20m)
+
+## testing
+test <- lapply(1:5, 
+       function(i){
+         sum(jtw_driving_akl_with_routes_proj_cleaned[which(st_is_within_distance(jtw_driving_akl_with_routes_proj_cleaned,
+                      at_traffic_count_2018_proj[i, ],
+                      dist = 20, 
+                      sparse = FALSE))
+                      , ]$total_driving_travellers)})
+
+
+```
+
+
+```{r}
+
+## outliers
+mapview(at_traffic_count_2018_proj[at_traffic_count_2018_proj$total_drivers_within_20m > 5000, c(2:17, 25:27)])
+
+mapview(at_traffic_count_2018_proj[ at_traffic_count_2018_proj$Direction == "Both", c(2:17, 25:27)])
+
+ifelse(at_traffic_count_2018_proj$Direction == "Both", )
+
+at_traffic_count_2018_proj$total_drivers_within_20m
+
+```
+
+
+#### iii. density plots of Traffic volumes
+```{r}
+
+plot(density(at_traffic_count_2018_proj$total_drivers_within_20m), col = 'red', main = "")
+lines(density(at_traffic_count_2018_proj$`AM Peak Volume`), col = 'blue')
+lines(density(at_traffic_count_2018_proj$`PM Peak Volume`), col = 'green')
+lines(density(at_traffic_count_2018_proj$`Mid Peak Volume`), col = 'purple')
+lines(density(at_traffic_count_2018_proj$`5 Day ADT`, na.rm = TRUE), col = 'orange')
+legend("topright", c("Total drivers within 20m radius", "AM Peak Volume", "PM Peak Volume", "Mid Peak Volume", "5 Day ADT"), col=c("red", "blue", "green", "purple", "orange"), lwd = 3, bty='n', xpd=NA)
+
+
+```
+
+
+
+### 4b. Cas data 
+
+#### i. using leaflet marker cluster
+
+https://rstudio.github.io/leaflet/markers.html?fbclid=IwAR1CSerjcuUa4huSRNddBun9YyARNgTPEmjCK74CTfN61PkpOfgLJxj7HHA
+
+https://leafletjs.com/2012/08/20/guest-post-markerclusterer-0-1-released.html
+
+```{r}
+
+leaflet(cas_data_akl_2018_geo) %>% 
+  addTiles() %>% 
+  addMarkers(clusterOptions = markerClusterOptions())
+
+```
+
+#### ii. using mapview and change the opacity of the points
+
+```{r}
+
+mapview(cas_data_akl_geo[1:12000, ], alpha = 0.1,  alpha.regions = 0.1, cex = 2)
+
+```
+
+
+## 5. Scenarios/Data Analysis
+
+Shriv
+
+CAS analysis
+
+- calculating meshblock/SA2 relative to crash point
+- looking at the source people how many people exposed on a crash point
+- methodology of doing this ?
+- understanding there is a significant disadvantages of geographical area
+- `crash hot spot` hot spot analysis is the name 
+- **the correlation between crashes and flows, and number of trips** (need to think about)
+- per route, how many cas points intersect with
+
+- clustering algorithm with strong cluster the road and segment 
+(using 5 years data from cas)
+
+Simon
+- expand the source to all data 
+- cluster the crashes that closed together (hot spot clustering relative to closed to the data), looking at high density and low density (look at literature). read about hot spot analysis 
+
+**Objective analysis**
+1. understand why crashes happened
+ and where it happened
+
+2. people travelling (pack analysis). where people residing has a correlation between crashes. Exposure of origins of traveller using mosaic or social index data available. 
+Is it safe travel closer to home? 
+
+**2nd part crash centric (testing the impact of likelihood of flows) vs 1st part people centric analysis (focus on the people centric analysis)
+**test the strength as a correlation
+
+**insights from analysing the data, a story to tell from the research project **
+
+```{r}
+## using ggplot for viz
+library(ggplot2)
+
+## prepping the data 
+cas_data_agg_count <- cas_data %>% 
+  dplyr::select(crashYear, crashSeverity, total) %>% 
+  group_by(crashYear, crashSeverity) %>% 
+  summarise(count_of_crashes = sum(total, na.rm = TRUE))
+
+##plotting with ggplot
+ggplot(cas_data_agg_count, aes(x = crashYear, y = count_of_crashes, colour = crashSeverity)) + geom_line()
+
+## Number of crashed by crash year by crash severity 
+cas_data_agg_count %>% 
+  tidyr::pivot_wider(names_from = crashYear,
+                    values_from = count_of_crashes)
+
+#Shriv 19 April 2022
+## in dept reporting with serious and fatal crashes by police
+## there is a reporting bias on non-injury and minor crash, uncertain bias
+
+
+```
+
+### 5a. Hovmoller Plots
+
+- Another heatmap plot
+- it is a two-dimensional space-time representation in which space is collapse onto one dimension against time
+
+We want to visualise if total crash in a given SA2 changes over time (year). 
+
+We cannot for seasonality as the crash points has been aggregated to year level.
+
+```{r}
+
+## aggregating to SA2
+cas_data_akl_SA2 <- key[c("MB2018_V1_00", "Statistical area 2 code (2018 areas)")] %>% 
+  mutate(MB2018_V1_00 = as.integer(MB2018_V1_00)) %>% 
+  inner_join(cas_data[cas_data$region == 'Auckland Region',], by = c("MB2018_V1_00" = "meshblockId")) %>% 
+  dplyr::select(`Statistical area 2 code (2018 areas)`, total) %>% 
+  group_by(`Statistical area 2 code (2018 areas)`) %>% 
+  summarise(total_all_years = sum(total))
+
+
+cas_data_akl_SA2_per_year <- key[c("MB2018_V1_00", "Statistical area 2 code (2018 areas)")] %>% 
+  mutate(MB2018_V1_00 = as.integer(MB2018_V1_00)) %>% 
+  inner_join(cas_data[cas_data$region == 'Auckland Region',], by = c("MB2018_V1_00" = "meshblockId")) %>% 
+  dplyr::select(`Statistical area 2 code (2018 areas)`, total, crashYear) %>% 
+  group_by(`Statistical area 2 code (2018 areas)`, crashYear) %>% 
+  summarise(total = sum(total)) %>% 
+  inner_join(sa2_clipped_geo_akl, by = c("Statistical area 2 code (2018 areas)" = "SA22021_V1")) %>% 
+  left_join(cas_data_akl_SA2, by = "Statistical area 2 code (2018 areas)" )
+
+## tidying up sf dataframe
+cas_data_akl_SA2_per_year <- st_sf(cas_data_akl_SA2_per_year[!names(cas_data_akl_SA2_per_year) %in% c("geometry")], geometry = cas_data_akl_SA2_per_year$geometry)
+
+##looking at the distribution of the total crash irrespective of 
+##the SA2 polygon and crash year
+hist(cas_data_akl_SA2$total_all_years)
+
+## Hovmöller Plot 
+
+#install.packages("viridis")
+library(viridis)
+
+#install.packages("brewer")
+#library(brewer)
+
+## Hovmoller Plot - spatio-temporal map
+## we can deduce that different for each SA2 polygon and crash year, there is a variance of crash point
+
+ggplot(data = dplyr::filter(cas_data_akl_SA2_per_year, total_all_years > 1000)
+       , mapping = aes(x = crashYear, y = reorder(SA22021__2, total), 
+                                                       fill = total)) +
+  geom_tile() +
+  scale_fill_viridis(name = "Hovmöller plot of crash points per year", option = "plasma", begin = 0, end = 1, direction = 1) +
+  theme_minimal() +
+  labs(title = paste(" "), x = "Crash Year", y = "Statistical Area 2") +
+  theme(legend.position = "bottom") +
+  theme(legend.title = element_text(size = 12)) +
+  theme(axis.text.y = element_text(size = 8)) +
+  theme(axis.text.x = element_text(size = 8)) +
+  theme(axis.title = element_text(size = 10, face = "plain")) +
+  theme(legend.key.width = unit(1, "cm"), legend.key.height = unit(1, "cm"))
+
+```
+
+
+### 5b. Calculating meshblock/SA2 relative to crash point that occurred in 2018
+
+The NZDep is an area-based measure, which measures the level of deprivation for people in each small area and is based on nine Census 2018 variables (NZDep2018).
+
+NZDep2018 is displayed in 10 deciles:
+Decile 1 represents areas with the least deprived NZDep2018 scores
+Decile 10 represents areas with the most deprived NZDep2018 scores
+
+source:
+https://ehinz.ac.nz/indicators/population-vulnerability/socioeconomic-deprivation-profile/#nzdep-for-2018-nzdep2018
+
+https://www.otago.ac.nz/wellington/departments/publichealth/research/hirp/otago020194.html
+
+
+```{r}
+
+## count the number of crashes within 5meters of a given route
+## should we use projected
+jtw_driving_akl_with_routes$cas_within_5m <- lengths(st_is_within_distance(jtw_driving_akl_with_routes,
+                                                                           cas_data_akl_2018_geo,
+                                                                           dist = 5)) 
+
+## getting the total number of travelers for a given route
+##exposed to crash point by multiple total travelers with 
+## total crash points within the 5 meter route radius
+
+jtw_driving_akl_with_routes$total_traveler_times_cas <- 
+  jtw_driving_akl_with_routes$cas_within_5m * jtw_driving_akl_with_routes$total_driving_travellers
+
+## get the SA2 2018 deprivation index
+dep_index_2018 <- read_xlsx("../data/otago730397.xlsx", 
+           sheet = "NZDep2018_WgtAvSA2")
+
+dep_index_2018$SA22018_code <-  as.integer(dep_index_2018$SA22018_code)
+
+jtw_driving_akl_SA2_cas_dep <-  st_drop_geometry(jtw_driving_akl_with_routes) %>% 
+  group_by(SA2_code_usual_residence_address, SA2_name_usual_residence_address) %>% 
+  summarise(total_cas_SA2_source = sum(cas_within_5m), 
+            total_driving_travellers = sum(total_driving_travellers),
+            total_traveler_times_cas = sum(total_traveler_times_cas)) %>% 
+  
+  ## joining deprivation index data from 2018
+  left_join(dep_index_2018[, c("SA22018_code", "SA2_average_NZDep2018", "SA2_average_NZDep2018_score", "URPopnSA2_2018")], by = c("SA2_code_usual_residence_address" = "SA22018_code")) %>% 
+  
+  ##joining SA2 polygons
+  left_join(sa2_clipped_geo_akl %>% mutate(SA22021_V1 = as.integer(SA22021_V1)), 
+            by = c("SA2_code_usual_residence_address" = "SA22021_V1"))
+
+jtw_driving_akl_SA2_cas_dep <- st_sf(jtw_driving_akl_SA2_cas_dep[!names(jtw_driving_akl_SA2_cas_dep) %in% c("geometry")], geometry = jtw_driving_akl_SA2_cas_dep$geometry)
+
+## note there are 261 working days in a year
+## assuming that the crash occured during a working day
+jtw_driving_akl_SA2_cas_dep$cas_per_SA2_res <- jtw_driving_akl_SA2_cas_dep$total_traveler_times_cas / 
+  jtw_driving_akl_SA2_cas_dep$total_driving_travellers
+  
+
+## histogram plot
+hist(jtw_driving_akl_SA2_cas_dep$cas_per_SA2_res, breaks = 100)
+
+##density plot
+d <- density(jtw_driving_akl_SA2_cas_dep$cas_per_SA2_res)
+plot(d)
+
+##average cas point for each SA2 polygon source
+mean(jtw_driving_akl_SA2_cas_dep$cas_per_SA2_res) ## 0.01632508
+
+
+mapview(jtw_driving_akl_SA2_cas_dep[c("SA2_name_usual_residence_address", "total_cas_SA2_source", "total_driving_travellers", "SA2_average_NZDep2018", "SA2_average_NZDep2018_score", "cas_per_SA2_res", "total_traveler_times_cas")], zcol = "cas_per_SA2_res", lwd = 0)
+
+mapview(jtw_driving_akl_SA2_cas_dep[c("SA2_name_usual_residence_address", "total_cas_SA2_source", "total_driving_travellers", "total_traveler_times_cas", "cas_per_SA2_res", "SA2_average_NZDep2018", "SA2_average_NZDep2018_score")], 
+        zcol = "total_cas_SA2_source", 
+        alpha = 0.1,
+        layer.name = "Total Crash points x Traveller")
+
+mapview(jtw_driving_akl_SA2_cas_dep[c("SA2_name_usual_residence_address", "total_cas_SA2_source", "total_driving_travellers", "total_traveler_times_cas", "cas_per_SA2_res", "SA2_average_NZDep2018", "SA2_average_NZDep2018_score")], 
+        zcol = "cas_per_SA2_res", 
+        alpha = 0.1,
+        layer.name = "Total Crash points per SA2 (normalise)")
+
+```
+
+
+#### i. Looking deeper into Pukekohe Central
+
+- JTW data only has one observation where the usual residence is Pukekohe Central. The commuter travelled from Pukekohe to Shortland St.
+
+```{r}
+
+mapview(jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$SA2_name_usual_residence_address == 'Pukekohe Central', ], 
+        layer.name = "Pukekohe Central to Shortland St Route",
+        cex = 6) +
+
+
+mapview(cas_data_akl_2018_geo[st_is_within_distance(cas_data_akl_2018_geo, 
+jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$SA2_name_usual_residence_address == 'Pukekohe Central', ], 
+                      dist = 5,
+                      sparse = FALSE), ], 
+col.regions = 'red', 
+alpha = 0.1,
+alpha.regions = 0.3,
+cex = 2, 
+layer.name = "2018 Crash Points")
+
+
+##Another outlier
+#jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$SA2_name_usual_residence_address == 'Queen Street', ]
+
+
+ 
+```
+
+#### ii. Removing out the outlier
+
+- Removing 'Pukekohe Central' since it is an outlier. 
+- Compared to other SA2 polygon it has the least number of commuters that traveled from the SA2.
+
+```{r}
+## removing outlier, Pukekohe Central
+jtw_driving_akl_SA2_cas_dep2 <- jtw_driving_akl_SA2_cas_dep[jtw_driving_akl_SA2_cas_dep$SA2_name_usual_residence_address != 'Pukekohe Central', ]
+
+## Queen St can be another outlier
+jtw_driving_akl_SA2_cas_dep2 <- jtw_driving_akl_SA2_cas_dep[!(jtw_driving_akl_SA2_cas_dep$SA2_name_usual_residence_address %in% c('Pukekohe Central', 'Queen Street')), ]
+
+top_10 <- jtw_driving_akl_SA2_cas_dep2[with(jtw_driving_akl_SA2_cas_dep2,
+                                            order(-cas_per_SA2_res)),
+                                       c("SA2_name_usual_residence_address", "total_cas_SA2_source", "total_driving_travellers", "total_traveler_times_cas", "cas_per_SA2_res", "SA2_average_NZDep2018", "SA2_average_NZDep2018_score")]
+
+((top_10 <- top_10[1:10,]))
+
+
+mapview(jtw_driving_akl_SA2_cas_dep2[c("SA2_name_usual_residence_address", "total_cas_SA2_source", "total_driving_travellers", "total_traveler_times_cas", "cas_per_SA2_res", "SA2_average_NZDep2018", "SA2_average_NZDep2018_score")], 
+        zcol = "cas_per_SA2_res", 
+        alpha = 0.1,
+        layer.name = "Total Crash points per SA2 (normalise)")
+```
+
+#### iii. Total Cas point by Total Route Distance
+
+```{r}
+
+plot(round(jtw_driving_akl_with_routes$dist,0)/1000, 
+     jtw_driving_akl_with_routes$cas_within_5m)
+
+hist(jtw_driving_akl_with_routes$dist, breaks = 100)
+
+max(jtw_driving_akl_with_routes$dist, na.rm = TRUE)
+
+jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$dist > 6000000, ]
+
+jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$dist == 639252.4, ]
+
+
+jtw_driving_akl_with_routes[which(jtw_driving_akl_with_routes$dist > 600000), ]
+
+hist(jtw_driving_akl_with_routes[which(jtw_driving_akl_with_routes$dist < 600000),][["dist"]]
+, breaks = 100)
+
+
+plot(round(jtw_driving_akl_with_routes[which(jtw_driving_akl_with_routes$dist < 600000),][["dist"]]/1000, 0),
+     jtw_driving_akl_with_routes[which(jtw_driving_akl_with_routes$dist < 600000),][["cas_within_5m"]], 
+     xlab = "distance traveled (km)",
+     ylab = "crash points",
+     )
+
+```
+
+
+### 5c.Associating number of crashes and deprivation index
+
+When we do multiple tests (i.e., the 10 paired comparisons in this example) then we greatly increase the probability of obtaining at least one erroneous conclusion.
+
+This is known as the multiple comparison problem. It essentially says that if you look at enough things you will find something ‘happening’, even when there’s nothing going on.
+
+Remember, data always have variability, and if we are not careful we can ‘discover’ false structure that is not really there.
+
+So, when we look at these 10 comparisons we need to adjust so that the overall error rate (the probability of any spurious significance) over all 10 comparison is no more the 5%. This can be done using a TUKEY ADJUSTMENT
+
+```{r}
+
+## change the average deprivation index of 2018 to factor 
+jtw_driving_akl_SA2_cas_dep2$SA2_average_NZDep2018 <- as.factor(jtw_driving_akl_SA2_cas_dep2$SA2_average_NZDep2018)
+
+## plotting deprivation index by the number of crashes per SA2
+#boxplot(total_cas_SA2_source ~ SA2_average_NZDep2018, data = jtw_driving_akl_SA2_cas_dep)
+
+
+boxplot(cas_per_SA2_res ~ SA2_average_NZDep2018, data = jtw_driving_akl_SA2_cas_dep2)
+
+```
+
+
+```{r}
+
+library(s20x)
+
+
+## fit a linear model
+#cas_dep_fit <- lm(formula = total_cas_SA2_source ~ SA2_average_NZDep2018, 
+#                 data = jtw_driving_akl_SA2_cas_dep)
+
+cas_dep_fit <- lm(formula = cas_per_SA2_res ~ SA2_average_NZDep2018, 
+                  data = jtw_driving_akl_SA2_cas_dep2)
+
+summary(cas_dep_fit)
+
+anova(cas_dep_fit)
+
+##Multiple Comparisons Output
+summary1way(cas_dep_fit)
+
+(cis = multipleComp(cas_dep_fit))
+
+cis[cis[, 4]< .05, ] # Obtain significant deprivation index and count of cas points combinations at the 5% level
+
+
+```
+
+#### 19 April 22 Notes from Shriv and Simon
+
+```{r}
+##conclusion
+## deprivation index cannot be associated with cas points (for 2018 data)
+
+## 19 April 2022 - shriv and routes
+## the longer the route the more crash points
+## there are two confounding factors that affect, distance and population density
+
+## regression on the type routes
+## length of route and the number of people SA2 source
+## taking all routes x commuter x cas point
+
+## shriv
+## add a model in the SA2 and cas points
+## each route of the SA2 has different lengths, the number commuter
+## are some routes riskier than others 
+
+##simon - next step
+## risk of the route, number of crashes encountered by a given route a
+## number of crashes divided by the length of route
+
+## clustering the segments of the routes and find the risky segment of routes
+
+## shriv
+- difference between NZTA and MoT, is that NZTA is focused on highway structure e.g. details the make up and characteristics of teh road
+- the MoT focuses on what aspects that we can associate with policy, gathering high level insights
+- MoT more interested on people aspect
+- MoT one is the project (bi-variate analysis), looking at crash exposure per person
+```
+
+
+```{r}
+#calculating meshblock/SA2 relative to crash point
+key$MB2018_V1_00 <-  as.integer(key$MB2018_V1_00)
+
+cas_data_2018_akl <-  cas_data[cas_data$crashYear == 2018 & cas_data$region == 'Auckland Region', ] %>%
+  select('meshblockId', 'total') %>% 
+  group_by(meshblockId) %>% 
+  summarise(total = sum(total)) %>% 
+  inner_join(key[c("MB2018_V1_00", "Statistical area 2 code (2018 areas)")], by = c("meshblockId" = "MB2018_V1_00")) %>% 
+   group_by(`Statistical area 2 code (2018 areas)`) %>% 
+  summarise(total = sum(total)) %>% 
+  inner_join(sa2_clipped_geo_akl[c("SA22021_V1", "SA22021__1", "geometry")], 
+  by = c("Statistical area 2 code (2018 areas)" = "SA22021_V1"))
+
+cas_data_2018_akl <- st_sf( cas_data_2018_akl[!names(cas_data_2018_akl) %in% c("geometry")], 
+                           geometry = cas_data_2018_akl$geometry)
+
+mapview(cas_data_2018_akl, zcol = c("total"), alpha.region = 0.4, lwd = 0)
+
+
+mapview(cas_data_akl_geo)
+
+```
+
+
+
+### 5d. Heat Maps (Kernel Density Estimation) Basic Spatial Point Pattern Analysis in R
+
+https://michaelminn.net/tutorials/r-point-analysis/
+
+**Modelling crash points**
+
+**Modifiable Areal Unit Problem**
+- a major issue with any kind of aggregation is that the results of your analysis can vary widely depending on where you draw the boundaries called MODIFIED AREAL UNIT PROBLEM (MAUP)
+
+**Heat Maps (Kernel Density Estimation)**
+
+- Kernel density estimation (KDE) is a statistical technique that can be used to avoid MAUP 
+
+- KDE involves systematically running a small kernel matrix over the area being analyze to visually spread the effects of crime points over adjacent space. 
+- On a point map, locations where large numbers of crimes occur close to each other would not be clear, but using a kernel to spread that affect and color it more intensely makes hot spots stand out.
+
+Creating a heat map
+1. converting points to a raster or regular grid of areas or pixels using rasterize() function from the raster library
+
+2. Specify the grid size, should we try 5m grid size, meaning each grid cell is 5m x 5m. This choice is arbitrary, but should not be too large to avoid making the pixels into areas large enough to run into teh MAUP
+
+
+```{r}
+#install.packages("raster")
+library(raster)
+
+#we need to use projection of SA2 polygons 
+sa2_clipped_proj_akl <- st_transform(sa2_clipped_geo_akl, crs = 2193)
+
+
+pixelsize = 5 #5 meter grid size
+
+## extent() function returns an extent object of a raster or spatial object (or an extent object), or creaes an extent object from a z=2 x 2 matrix (first row: xmin, xmax; second row, ymin, ymax)
+
+##bounding box of the raster
+((box = round(extent(sa2_clipped_proj_akl)/pixelsize) * pixelsize
+))
+
+st_crs(sa2_clipped_proj_akl)
+
+## create the template 
+template = raster(box, crs = st_crs(sa2_clipped_proj_akl),
+	nrows = (box@ymax - box@ymin) / pixelsize, 
+	ncols = (box@xmax - box@xmin) / pixelsize)
+
+cas_data_akl_proj$PRESENT = 1
+
+cas_raster = rasterize(cas_data_akl_proj, 
+                       template, field = 'PRESENT', fun = sum)
+
+plot(cas_raster) #, xlim=c(950000, 975000), ylim=c(505000, 525000))
+plot(sa2_clipped_proj_akl, add = T) #, border='#00000040', add=T)
+
+#plot(cas_raster)
+#mapview(cas_raster)
+#class(cas_raster)
+
+
+```
+the focal() function
+- used to run a Gaussian smoothing kernel created with the focalWeight() 
+function over the raster of crash points to create a new heat map raster. 
+
+```{r}
+
+kernel = focalWeight(cas_raster, d = 264, type = 'Gauss')
+cas_heat = focal(cas_raster, kernel, fun = sum, na.rm=T)
+plot(cas_heat)#, xlim=c(950000, 975000), ylim=c(505000, 525000))
+plot(sa2_clipped_proj_akl, border='#00000040', add=T)
+
+```
+
+#### Heat Maps v2
+
+```{r}
+# For pretty table
+library(knitr)
+
+library(sp)
+# Pretty graphics
+library(ggplot2)
+library(gridExtra)
+# Thematic maps
+library(tmap)
+# Pretty maps
+library(ggmap)
+
+#install.packages("hexbin")
+library(hexbin)
+
+```
+
+https://gdsl-ul.github.io/san/points.html#kde
+
+
+Binning maps
+- divde each of teh two dimension into "buckets' and ocunt how many points fall within each bucket. Unlike histograms, we encode that count with a color gradient rather than a bar chart over an additional dimension (for that, we would need a 3D plot). These 
+"buckets" can be squares or hexagons
+
+```{r}
+
+sqbin <- ggplot() +
+  ## add 2D binning with teh XY coordinates as a dataframe
+  
+  geom_bin2d( data = as.data.frame(st_coordinates(cas_data_akl_geo)), aes(x = X, y = Y))
+
+```
+
+
+```{r}
+## hex binning
+
+## setting up plot
+
+hexbin <- ggplot() +
+  
+  # add hex binning with the XY coordinates as dataframe
+    geom_hex (data = as.data.frame(st_coordinates(cas_data_akl_geo)), aes(x = X, y = Y)) +
+  
+  # use viris for color encoding 
+  scale_fill_continuous(type = "viridis")
+  
+grid.arrange(sqbin, hexbin, ncol=2)
+
+
+
+```
+
+#### KDE
+
+Kernel Density Estimation (KDE)
+- is a technique that creates a continuous representation of teh distribution of a give variable. 
+
+- Geogrpahy data is usually represented as a two dimensional space where we locate objects using a system of dual coordinates, `X` and `Y` (or latitude and longitude.)
+
+-Involves creating a surface, where intensity will be represented with a color gradient, rathern than with the decond dimension, as it is teh case 
+
+```{r}
+
+## this approach generates a surface that represents teh density of dits, that is an estimation of the probability of crash points at a given coordiate. 
+
+kde <- ggplot(data = cas_data_akl_geo) +
+  stat_density2d_filled(data = as.data.frame(st_coordinates(cas_data_akl_geo)),
+                        aes(x = X, y = Y, alpha = ..level..), n = 16) +
+  #tweak the color gradient 
+  scale_color_viridis_c() + 
+  
+  #white theme
+  theme_bw()
+
+  #add invisible points to improve proportions
+  kde + geom_sf(alpha = 0)
+  
+```
+
+Plotting an underlying basemap using Openstreetmap to give some context on the points
+
+```{r}
+
+# data prepping, interested only using lat/lon data
+lon_lat <- cas_data_akl_geo %>% 
+  st_coordinates() %>% 
+  as.data.frame()
+
+# basemaps
+qmplot(
+  X,
+  Y,
+  data = lon_lat,
+  geom = "blank"
+) +
+  #KDE
+  stat_density2d_filled(
+    data = lon_lat,
+    aes(x = X, y = Y, alpha = ..level..),
+    n = 100
+  ) + 
+  # tweak the color gradient
+  scale_color_viridis_c()
+  
+```
+
+#### Another KDE map approach (interactive)
+
+https://bookdown.org/lexcomber/brunsdoncomber2e/Ch6.html
+
+IMPORTANT: some of the function in tmaptools like smooth_map has been deprecated.
+an alternative solution is to ise 'oldmaptools' package
+
+https://github.com/mtennekes/oldtmaptools/blob/master/R/smooth_map.R
+
+
+```{r}
+#install.packages("GISTools")
+
+
+library(tidyverse)
+library(GISTools)
+library(sp)
+library(rgeos)
+library(tmap)
+library(tmaptools)
+library(devtools)
+install_github("mtennekes/oldtmaptools")
+library(oldtmaptools)
+
+
+# Get the data
+data(newhaven)
+# look at it
+# select 'view' mode
+tmap_mode('view')
+# Create the map of blocks and incidents
+tm_shape(blocks) + tm_borders() + tm_shape(breach) +
+  tm_dots(col='navyblue')
+
+# Function to choose bandwidth according Bowman and Azzalini / Scott's rule
+# for use with <smooth_map> in <tmaptools>
+
+choose_bw <- function(spdf) {
+  X <- coordinates(spdf)
+  sigma <- c(sd(X[,1]),sd(X[,2]))  * (2 / (3 * nrow(X))) ^ (1/6)
+  return(sigma/1000) }
+
+#install.packages("tmaptools")
+library(tmaptools)
+tmap_mode('view')
+breach_dens <- smooth_map(breach,cover=blocks, bandwidth = choose_bw(breach))
+
+tm_shape(breach_dens$raster) + tm_raster()
+
+tmap_mode('view')
+tm_shape(blocks)+ tm_borders(alpha=0.5) +
+  tm_shape(breach_dens$iso) + tm_lines(col='darkred',lwd=2) 
+
+
+st_crs(as(blocks, "sf")) #EPSG 8656
+
+###############
+
+## kernel density 
+
+##using as_Spatial() to transform sf objects to sp
+## https://r-spatial.github.io/sf/reference/coerce-methods.html
+
+sa2_clipped_proj_akl <- st_transform(sa2_clipped_geo_akl, crs = 2193)
+#sa2_clipped_proj_akl <- st_transform(sa2_clipped_geo_akl, crs = 8656)
+#cas_data_akl_proj_8656 <- st_transform(cas_data_akl_proj, crs = 8656)
+
+cas_data_akl_proj_sp <- as_Spatial(cas_data_akl_proj) 
+sa2_clipped_proj_akl_sp <- as_Spatial(sa2_clipped_proj_akl) 
+
+
+
+cas_data_akl_proj_dens <- smooth_map(cas_data_akl_proj_sp, cover = sa2_clipped_proj_akl_sp, bandwidth = choose_bw(cas_data_akl_proj_sp))
+
+
+###density plot dynamic###
+tmap_mode('view')
+tm_shape(cas_data_akl_proj_dens$raster, projection = 2193) + tm_raster(alpha=0.8) 
+
+
+##density plot static
+tmap_mode('plot')
+# Create the KDEs for the two data sets:
+contours <- seq(0,1.4,by=0.2)
+
+#creating the density
+cas_data_akl_proj_dens_static <- smooth_map(cas_data_akl_proj_sp, 
+                                            breaks = contours,
+                                            cover = sa2_clipped_proj_akl_sp, 
+                                            style = 'fixed', 
+                                            bandwidth = choose_bw(cas_data_akl_proj_sp))
+
+
+
+dn <- tm_shape(sa2_clipped_proj_akl_sp) + 
+  tm_borders() + 
+  tm_shape(cas_data_akl_proj_dens_static$polygons) + 
+  tm_fill(col='level',alpha=0.8) +
+  tm_layout(title="Crash Density")
+
+
+
+
+
+
+```
+
+### 5e. Spatial Autocorrelation
+https://data.cdrc.ac.uk/system/files/practical9_0.html
+
+Spatial Autocorrelation
+- measures how distance influences a particular variable
+- it quantifies the degree of which objects are similar to nearby objects. 
+
+* Variables are said to have a **positive spatial autocorrelation** when similar values tend to be neared together than dissimilar values
+
+Waldo Tober's first law of geography
+- "Everything is related to everything else, but near things are more related than distant things"
+
+- We would expect most geographic phenomena to exert a spatial autocorrelation of some kind
+
+We can represent spatial autocorrelaton in two ways
+
+1.  global models 
+    - create a single measure which represent the entire data 
+
+2. local models 
+    - lets us explore spatial clustering across space
+
+Running a local spatial autocorrelation
+- need to create a moran plot which looks at each of teh values plotted against their spatially lagged values
+- explores the relationship between the data and their neighbours as a scatter plot
+- The style refers to how the weights are coded. "W" are weights are row standardised (sums over all links to n)
+
+
+**Exploratory Spatial Data Analysis (ESDA)**
+
+https://towardsdatascience.com/what-is-exploratory-spatial-data-analysis-esda-335da79026ee
+
+- correlates a specific variable to a location, taking into account the values of the same variable in the neighbourhood. The methods used for this purpose are called Spatial Autocorrelation
+
+Spatial autocorrelation
+- Describing the presence (or absence) of spatial variations in a given variable.
+- Like, conventional correlation methods, Spatial autocorrelation has positive and negative values
+
+Positive Spatial autocorrelation
+- when areas close to each other have similar values (High-high, or Low-low)
+
+Negative Spatial autocorrelation
+- neighbourhood areas to be different (Low values next to high values).
+
+```{r}
+# using the spatial autocorrelation functions available from the spdep package
+library(spdep)
+
+```
+
+
+#### i. Getting The Neighbhours
+
+##### Queen's Contiguity
+```{r}
+
+##using total 2018 CAS points per SA2 polygon
+## need to use projected
+## jtw_driving_akl_SA2_cas_dep2 - excludes outliers Pukekohe Central and Queen St
+## jtw_driving_akl_SA2_cas_dep - includes outliers
+
+jtw_driving_akl_SA2_cas_dep_proj <- st_transform(jtw_driving_akl_SA2_cas_dep2[!st_is_empty(jtw_driving_akl_SA2_cas_dep2), ],
+ crs = 2193)
+
+
+##need to transform this to sp 
+jtw_driving_akl_SA2_cas_dep_proj_sp <- as_Spatial(jtw_driving_akl_SA2_cas_dep_proj)
+
+##Finding neighbours
+#- in order for the subsequent model to work, we need to work out what polygons neighbour each other
+
+neighbours <- poly2nb(jtw_driving_akl_SA2_cas_dep_proj_sp)
+neighbours
+
+##plotting the links between neighbours to visualise their distribution across space
+
+plot(jtw_driving_akl_SA2_cas_dep_proj_sp, border = 'lightgrey')
+plot(neighbours, coordinates(jtw_driving_akl_SA2_cas_dep_proj_sp), add = TRUE, col = 'red')
+
+## NOTE: Default contiguity is Queen. 
+## Spatial weights are how we determine the area’s neighborhood. There are different statistical methods that are used for determining spatial weights, and it is beyond this to provide an in-depth explanation of each in this article. One of the most commonly used spatial weights methods is Queen Contiguity Matrix, which we use. 
+
+
+```
+
+##### Rook's Contiguity
+
+```{r}
+## Calculate the Rook's case neighbours
+# the parameter `queen', if TRUE a single shared boundary point meets the contiguity condition, if FALSE, more than one share point is required; not that more than shared boundary point does not necessarily mean a shared boundary
+neighbours2 <- poly2nb(jtw_driving_akl_SA2_cas_dep_proj_sp, queen = FALSE)
+neighbours2
+
+## comapring different types of neighbours
+plot(jtw_driving_akl_SA2_cas_dep_proj_sp, border = 'lightgrey')
+plot(neighbours, coordinates(jtw_driving_akl_SA2_cas_dep_proj_sp), add = TRUE, col = 'blue', lwd = 2)
+plot(neighbours2, coordinates(jtw_driving_akl_SA2_cas_dep_proj_sp), add = TRUE, col = 'red')
+```
+##### Removing the islands
+
+```{r}
+##need to remove the islands as there are no neighbours
+## using the rmapshaper package to remove the islands
+#install.packages("rmapshaper")
+library(rmapshaper)
+
+jtw_driving_akl_SA2_cas_dep_proj_sp_2 <- ms_filter_islands(jtw_driving_akl_SA2_cas_dep_proj_sp, min_area = 12391399903)
+
+
+neighbours3 <- poly2nb(jtw_driving_akl_SA2_cas_dep_proj_sp_2, queen = FALSE)
+neighbours3
+
+plot(jtw_driving_akl_SA2_cas_dep_proj_sp_2, border = 'lightgrey')
+plot(neighbours3, coordinates(jtw_driving_akl_SA2_cas_dep_proj_sp_2), add = TRUE, col = 'blue')
+
+
+
+```
+
+#### ii. Global Autocorrelation
+
+Global spatial autocorrelation
+- focuses on the overall trend in the dataset and tells us if the degree of clustering in the dataset
+
+With the neighbours defined. We can now run a model. First we need to convert the data types of the neighbours object. This file will be used to determine how the neighbours are weighted
+
+```{r}
+# Convert the neighbour data to a listw object
+listw <- nb2listw(neighbours3)
+listw
+
+```
+
+
+##### Moran’s test
+
+Moran’s test
+- This will create a correlation score between -1 and 1. Much like a correlation coefficient, 1 determines perfect postive spatial autocorrelation (so our data is clustered), 0 identifies the data is randomly distributed and -1 represents negative spatial autocorrelation (so dissimilar values are next to each other).
+
+```{r}
+
+moran.test(jtw_driving_akl_SA2_cas_dep_proj_sp_2$cas_per_SA2_res, listw)
+
+## The Moran I statistic is 0.55, we can therefore determine that there our qualification variable is positively autocorrelated in Auckland. In other words, the data does spatially cluster. We can also consider the p-value as a measure of the statistical significance of the model.
+
+
+```
+
+##### Moran's plot
+
+Both Moran’s I and Moran’s I Scatter plot show positively correlated observations by location in the dataset.
+
+```{r}
+
+
+## Explores the relationship between the data and their neighbours as a scatter plot. The style refers to how the weights are coded. “W” weights are row standardised (sums over all links to n).
+
+## creates a moran plot
+moran <- moran.plot(jtw_driving_akl_SA2_cas_dep_proj_sp_2$cas_per_SA2_res, listw = nb2listw(neighbours3, style = "W"), xlab ="Total Crash points per SA2 (normalise)", ylab = "Spatial Lag")
+
+```
+
+#### iii. Local Spatial Autocorrelation
+- looking into spatial variations in the dataset
+
+Local Spatial Autocorrelation
+- using Local Indicators of Spatial Association (LISA) is used to detect clusters spatially
+
+LISA classifies areas into four groups:
+1. high values near to high values (HH)
+2. Low values with the nearby low values (LL)
+3. Low values with high values in its neighbourhood and vice versa
+
+Useful statistics from the model which are as defined:
+
+Name    |    Description
++-------+-------------------------------------------+
+Ii      | local moran statistic
+E.Ii    | expectation of local moran statistic 
+Var.Ii  | variance of local moran statistic
+Z.Ii    | standard deviate of local moran statistic 
+Pr()    | p-value of local moran statistic
+
+
+
+```{r}
+
+## create a local moran output
+local <- localmoran(jtw_driving_akl_SA2_cas_dep_proj_sp_2$cas_per_SA2_res,listw = nb2listw(neighbours3, style = "W"))
+
+```
+
+
+```{r}
+
+
+## map the local moran statistic (Ii)
+## A positive value for Ii indicates that the unit is surrounded by units with similar values
+
+#bind results to our polygon shapefile
+moran.map <- cbind(jtw_driving_akl_SA2_cas_dep_proj_sp_2, local) ## change the non normalise that people travelled
+
+## map the results
+tm_shape(moran.map) + tm_fill(col = "Ii", style = "quantile",
+                              title = "local moran statistic")
+
+
+#From the map it is possible to observe the variations in autocorrelation across space. We can interpret that there seems to be a geographic pattern to the autocorrelation. However, it is not possible to understand if these are clusters of high or low values.
+
+```
+
+#### iv. map of the P-value to observe variances in significance across
+
+Includes creating a map which labels the features based on the types of relationships they share with their neighbours (i.e. high and high, low and low, insigificant, etc. . . ).
+
+```{r}
+
+### to create LISA cluster map ###
+quadrant <- vector(mode="numeric",length=nrow(local))
+
+# centers the variable of interest around its mean
+m.cas_per_SA2_res <- jtw_driving_akl_SA2_cas_dep_proj_sp_2$cas_per_SA2_res - mean(jtw_driving_akl_SA2_cas_dep_proj_sp_2$cas_per_SA2_res)
+
+# centers the local Moran's around the mean
+m.local <- local[,1] - mean(local[,1])
+
+# significance threshold
+signif <- 0.1
+
+# builds a data quadrant
+quadrant[m.cas_per_SA2_res >0 & m.local>0] <- 4
+quadrant[m.cas_per_SA2_res <0 & m.local<0] <- 1
+quadrant[m.cas_per_SA2_res <0 & m.local>0] <- 2
+quadrant[m.cas_per_SA2_res >0 & m.local<0] <- 3
+quadrant[local[,5]>signif] <- 0
+
+```
+
+
+```{r}
+
+# plot in r
+brks <- c(0,1,2,3,4)
+colors <- c("white","blue",rgb(0,0,1,alpha=0.4),rgb(1,0,0,alpha=0.4),"red")
+plot(jtw_driving_akl_SA2_cas_dep_proj_sp_2,border="lightgray",col=colors[findInterval(quadrant,brks,all.inside=FALSE)])
+box()
+legend("bottomleft",legend=c("insignificant","low-low","low-high","high-low","high-high"),
+       fill=colors,bty="n")
+
+
+```
+
+### 5f. Getis-Ord
+- used for hot spot analysis
+
+Getis-Ord Statistics
+- looks at neighbhours within a defined proximity to identify where either high or low values cluster spatially,
+- statistically significant hot-spots are areas of high values where other areas within a neighbourhood range also share high values too
+
+#### i. Definining a new set of neighbours. 
+
+Define a new set of neighbors. Whilst the spatial autocrrelation considered units which shared borders. fpr Getis-Ord we are defining neighbours based on proximity.
+
+```{r}
+jtw_driving_akl_SA2_cas_dep_proj_sp_2
+
+# creates centroid and joins neighbours within 0 and x units (trialing 1500m)
+nb <- dnearneigh(coordinates(jtw_driving_akl_SA2_cas_dep_proj_sp_2),0,1000) 
+
+# creates listw
+nb_lw <- nb2listw(nb, style = 'B')
+
+ # plot the data and neighbours
+plot(jtw_driving_akl_SA2_cas_dep_proj_sp_2, border = 'lightgrey')
+plot(nb, coordinates(jtw_driving_akl_SA2_cas_dep_proj_sp_2), add=TRUE, col = 'red')
+
+
+
+```
+### 5g. Equi distance grid
+
+```{r}
+
+mapview(sa2_clipped_proj_akl)
+
+grid_spacing <- 1000 # 1000 meters
+
+
+regional_sf <- st_read("../data/statsnzregional-council-2018-clipped-generalised-SHP/regional-council-2018-clipped-generalised.shp")
+
+mapview(regional_sf)
+
+mapview(regional_sf[regional_sf$REGC2018_1 == 'Auckland Region', ])
+
+polygony <- st_make_grid(regional_sf[regional_sf$REGC2018_1 == 'Auckland Region', ], square = T, cellsize = c(grid_spacing, grid_spacing)) %>% # the grid, covering bounding box
+  st_sf()
+
+
+plot(polygony, col = 'white')
+plot(st_geometry(regional_sf[regional_sf$REGC2018_1 == 'Auckland Region', ]), add = T)
+
+# this is the correct way of doing it?
+plot(st_geometry(regional_sf[regional_sf$REGC2018_1 == 'Auckland Region', ]), col = 'white')
+plot(polygony[regional_sf[regional_sf$REGC2018_1 == 'Auckland Region', ]], col = '#ff000088', add = TRUE)
+
+
+##################
+
+
+polygony <- st_make_grid(sa2_clipped_proj_akl, square = T, cellsize = c(grid_spacing, grid_spacing)) %>% # the grid, covering bounding box
+  st_sf() # not really required, but makes the grid nicer to work with later
+
+
+plot(polygony, col = 'white')
+plot(st_geometry(sa2_clipped_proj_akl), add = T)
+
+# https://stackoverflow.com/questions/53789313/creating-an-equal-distance-spatial-grid-in-r
+
+library(dplyr)
+library(RCzechia) # a package of Czech administrative areas
+library(sf)
+
+
+mesto <- kraje() %>% # All Czech NUTS3 ...
+  filter(NAZ_CZNUTS3 == 'Hlavní město Praha') %>% # ... city of Prague
+  st_transform(5514) # a metric CRS 
+
+grid_spacing <- 1000  # size of squares, in units of the CRS (i.e. meters for 5514)
+
+polygony <- st_make_grid(mesto, square = T, cellsize = c(grid_spacing, grid_spacing)) %>% # the grid, covering bounding box
+  st_sf() # not really required, but makes the grid nicer to work with later
+
+plot(polygony, col = 'white')
+plot(st_geometry(mesto), add = T)
+
+
+
+
+```
+
+
+```{r}
+
+plot(st_make_grid(what = "centers"), axes = TRUE)
+plot(st_make_grid(what = "corners"), add = TRUE, col = 'green', pch=3)
+sfc = st_sfc(st_polygon(list(rbind(c(0,0), c(1,0), c(1,1), c(0,0)))))
+plot(st_make_grid(sfc, cellsize = .1, square = FALSE))
+plot(sfc, add = TRUE)
+# non-default offset:
+plot(st_make_grid(sfc, cellsize = .1, square = FALSE, offset = c(0, .05 / (sqrt(3)/2))))
+plot(sfc, add = TRUE)
+
+nc = read_sf(system.file("shape/nc.shp", package="sf"))
+g = st_make_grid(nc)
+plot(g)
+plot(st_geometry(nc), add = TRUE)
+# g[nc] selects cells that intersect with nc:
+plot(g[nc], col = '#ff000088', add = TRUE)
+
+plot(g[nc])
+
+```
+
+
+```{r}
+class(sa2_clipped_proj_akl)
+
+## create a grid of size 500
+g <- st_make_grid(sa2_clipped_proj_akl, cellsize = 500) ###
+plot(g)
+plot(st_geometry(sa2_clipped_proj_akl), add = TRUE)
+plot(g[sa2_clipped_proj_akl], col = '#ff000088', add = TRUE)
+
+##plotting it in mapview
+mapview(g[sa2_clipped_proj_akl])
+
+class(g[sa2_clipped_proj_akl])
+
+
+SA2_akl_proj_grid <- g[sa2_clipped_proj_akl]
+
+class(cas_data_akl_proj)
+
+
+
+
+```
+
+########################## END ###########################
+
+```{r}
+
+#rasterizing an sf object
+
+library(stars)
+
+cas_data_akl_geo_raster <- st_rasterize(cas_data_akl_geo[cas_data_akl_geo$crashYear == 2018, ])
+
+mapview(cas_data_akl_geo_raster)
+
+```
+
+
+```{r}
+
+
+cas_data_akl_crashyears_2018 <-  cas_data_akl_crashyears[cas_data_akl_crashyears$crashYear == 2018, ]
+
+cas_data_akl_crashyears_2018$`Statistical area 2 code (2018 areas)` <-  
+  as.integer(cas_data_akl_crashyears_2018$`Statistical area 2 code (2018 areas)`)
+
+jtw_driving_akl_total <-  jtw_driving_akl[c("SA2_code_usual_residence_address", "Total")] %>% 
+  group_by(SA2_code_usual_residence_address) %>% 
+  summarise(Total_commuters = sum(Total)) %>% 
+  inner_join(cas_data_akl_crashyears_2018
+,  by = c("SA2_code_usual_residence_address" = "Statistical area 2 code (2018 areas)"))
+  
+jtw_driving_akl_total <- st_sf(jtw_driving_akl_total[!names(jtw_driving_akl_total) %in% c("geometry")], geometry = jtw_driving_akl_total$geometry)
+
+
+jtw_driving_akl_total$ratio <-  jtw_driving_akl_total$total/jtw_driving_akl_total$Total_commuters
+
+mapview(jtw_driving_akl_total, zcol = c("ratio"), alpha.region =0.5)
+
+names(cas_data)
+
+- attributes of the sa2
+- demographic, deprivation index based on SA2 (age distribution, income level)/ mosaic data
+- correlate it with the number of crashes
+
+- validating routes (sanity for counts)
+- start with the traffic counter break it with segments
+- if you a have a traffic counter, you would find all the routes that go through there and aggregate there numbers 
+- this is calibrating the route counts
+
+cas analysis (cross this out)
+- take a crash points
+- take all the routes that go into that site
+- is there a traffic counter in that site
+
+```
+
+```{r}
+
+jtw_work_geo_sample_data <- st_sf(jtw_work_geo_sample_data[!names(jtw_work_geo_sample_data) %in% c("geometry"), geometry = jtw_work_geo_sample_data$geometry])
+
+jtw_usual_res_geo_sample_data <- st_sf(jtw_usual_res_geo_sample_data[!names(jtw_usual_res_geo_sample_data) %in% c("geometry"), geometry = jtw_usual_res_geo_sample_data$geometry])
+
+test_work <- st_coordinates(jtw_work_geo_sample_data[!st_is_empty(jtw_work_geo_sample_data), ])
+test_home <- st_coordinates(jtw_usual_res_geo_sample_data[!st_is_empty(jtw_usual_res_geo_sample_data), ])
+
+test <- cbind(test_home[,2:1], test_work[,2:1])
+
+```
+
+
+```{r}
+
+## get traffic count data from AT website
+download.file("https://at.govt.nz/media/1988190/at-website-traffic-counts-2012-2021.xlsx", "at-website-traffic-counts-2012-2021.xlsx")
+
+```
+
+```{r}
+
+cas_data_akl <- cas_data[cas_data$region == 'Auckland Region', ]
+
+## crashes occur mostly in 2-way street
+barplot(table(cas_data$roadLane))
+table(cas_data$roadLane)
+
+cas_data_akl$crashYear
+
+## roadLane by severity
+
+
+d <- cas_data_akl["crashYear"] %>% 
+  group_by(crashYear) %>% 
+  summarise(n = n())
+
+plot(d$crashYear, d$n, type = "l")
+
+
+
+```
+
+```{r}
+
+
+```
+
+
+
+- methodology developed to estimate the casualty rater per billion km for walking 
+and cycling
+
+Casualty data is available from 
+
+
+## 6. Advanced Visualisation
+
+# Appendix
+
+## Appendix A: Animated Maps
+
+### Animated maps (CH8 Geocomputation)
+
+```{r}
+
+library(spData)
+#install.packages("tmap")
+library(tmap)
+
+urban_anim = tm_shape(world) + 
+  tm_polygons() + tm_shape(urban_agglomerations) + 
+  tm_dots(size = "population_millions", col = "red") + tm_facets(along = "year", free.coords = FALSE)
+
+## to create gif animations `gifski` package is required
+#install.packages("gifski")
+library(gifski)
+
+tmap_animation(urban_anim, filename = "urb_anim.gif", delay = 40)
+
+```
+
+
+```{r}
+
+table(cas_data$crashYear)
+
+mb_clipped_sf <- read_sf("../data/meshblock-2018-clipped-generalised.shp")
+
+class(mb_clipped_sf)
+
+tm_shape(read_sf("../data/meshblock-2018-clipped-generalised.shp")) + tm_polygons()
+
+tm_shape(sa2_clipped_geo_akl) + tm_polygons()
+
+mapview(test)
+
+cas_data
+
+
+
+cas_data_akl <- cas_data[cas_data$region == 'Auckland Region',]
+cas_data_akl$meshblockId <- as.character(cas_data_akl$meshblockId )
+
+test <-  cas_data_akl %>% 
+  group_by(meshblockId) %>% 
+  summarise(n = n())
+
+class(test)
+class(mb_clipped_sf)
+
+test2 <- left_join(test, mb_clipped_sf, by = c("meshblockId" = "MB2018_V1_"))
+
+tm_shape(test2[!st_is_empty(test2$geometry), ]$geometry) + tm_polygons()
+
+
+test2[!st_is_empty(test2$geometry), ]
+
+mb_clipped_sf[mb_clipped_sf$MB2018_V1_ == "137100", ]
+
+test3 <-  st_sf(data.frame(n = test2[!st_is_empty(test2$geometry), ]$n), 
+      g = test2[!st_is_empty(test2$geometry), ]$geometry)
+
+class(test3)
+
+test3 <- st_transform(test3, crs = 4326)
+
+mapview(test3, zcol = "n")
+
+st_join?
+
+```
+## Appendix B: Hotspot Analysis
+
+
+```{r}
+
+
+
+
+mapview(cas_data_akl_geo[cas_data_akl_geo$crashYear == 2018, ],  zcol  = cas_data_akl_geo$crashSeverity)
+
+test <- st_join(sa2_clipped_geo_akl, cas_data_geo)
+
+mapview(test$geometry)
+
+plot(test$geometry)
+
+head(cas_data_akl_geo)
+
+table(cas_data_akl_geo$crashYear)
+
+## default crs is NZD2000 or EPSG 2193
+st_crs(mb_clipped_sf)
+
+mb_clipped_sf_geo <- st_transform(mb_clipped_sf, crs = 4326)
+
+mapview(cas_data_akl_geo[cas_data_akl_geo$crashYear == 2021, ], zcol = "crashSeverity" )
+
+mapview(mb_clipped_sf_geo, alpha.regions = 0.4)
+
+names(cas_data_akl_geo)
+
+plot()
+
+cas_data_akl_geo 
+
+plot(cas_data_akl_geo)
+
+```
+
+
+```{r}
+
+## using ggplot for viz
+library(ggplot2)
+
+cas_data_agg_count <- cas_data %>% 
+  select(crashYear, crashSeverity) %>% 
+  group_by(crashYear, crashSeverity) %>% 
+  summarise(count_of_crashes = n())
+
+ggplot(cas_data_agg_count, aes(x = crashYear, y = count_of_crashes, colour = crashSeverity)) + geom_line()
+
+```
+
+
+```{r}
+
+key$MB2018_V1_00 <- as.integer(key$MB2018_V1_00)
+
+cas_data_agg_mb <- cas_data %>% 
+  select(crashYear, crashSeverity, meshblockId) %>% 
+  group_by(crashYear, crashSeverity, meshblockId) %>% 
+  summarise(count_of_crashes = n()) %>% 
+  left_join(key[c("MB2018_V1_00","Statistical area 2 description", "Statistical area 2 code (2018 areas)")], by = c("meshblockId" = "MB2018_V1_00")) %>% 
+  left_join(sa2_clipped_geo_akl, by = c("Statistical area 2 code (2018 areas)" = "SA22021_V1")) %>% 
+  group_by(crashYear, crashSeverity, `Statistical area 2 code (2018 areas)`, `SA22021__1`, geometry) %>% 
+  summarise(count_of_crashes = sum(count_of_crashes))
+
+#tidying up the data
+cas_data_agg_mb <- st_sf(cas_data_agg_mb[, !names(cas_data_agg_mb) %in% c("geometry")] , geometry = cas_data_agg_mb$geometry )
+
+
+
+```
+### B.1 Rasterising vector data using stars library
+
+```{r}
+
+#install.packages("stars")
+library(stars)
+
+demo
+cas_data_akl_geo
+
+
+demo(nc, echo = FALSE, ask = FALSE)
+
+(x = st_rasterize(nc))
+
+test <- st_rasterize(cas_data_akl_geo[cas_data_akl_geo$crashYear == 2018, ], options = )
+
+plot(test)
+
+class(test)
+
+leaflet() %>% 
+  
+  
+mapview(test) + mapview(cas_data_akl_geo[cas_data_akl_geo$crashYear == 2018, ])
+
+ls(test)
+
+test
+```
+
+
+```{r}
+
+demo(nc, echo = FALSE, ask = FALSE)
+(x = st_rasterize(nc)) # default grid:
+
+
+# a bit more customized grid:
+(x = st_rasterize(nc, st_as_stars(st_bbox(nc), nx = 100, ny = 50, values = NA_real_)))
+plot(x, axes = TRUE)
+
+
+(ls = st_sf(a = 1:2, st_sfc(st_linestring(rbind(c(0.1, 0), c(1.1, 1))),
+   st_linestring(rbind(c(0, 0.05), c(1, 0.05))))))
+(grd = st_as_stars(st_bbox(ls), nx = 10, ny = 10, xlim = c(0, 1.0), ylim = c(0, 1),
+   values = NA_real_))
+
+
+# Only the left-top corner is part of the grid cell:
+sf_extSoftVersion()["GDAL"]
+plot(st_rasterize(ls, grd), axes = TRUE, reset = FALSE) # ALL_TOUCHED=FALSE; 
+plot(ls, add = TRUE, col = "red")
+plot(st_rasterize(ls, grd, options = "ALL_TOUCHED=TRUE"), axes = TRUE, reset = FALSE)
+plot(ls, add = TRUE, col = "red")
+
+
+# add lines to existing 0 values, summing values in case of multiple lines:
+(grd = st_as_stars(st_bbox(ls), nx = 10, ny = 10, xlim = c(0, 1.0), ylim = c(0, 1), values = 0))
+r = st_rasterize(ls, grd, options = c("MERGE_ALG=ADD", "ALL_TOUCHED=TRUE"))
+plot(r, axes = TRUE, reset = FALSE)
+plot(ls, add = TRUE, col = "red")
+
+
+```
+
