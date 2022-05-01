@@ -1432,94 +1432,13 @@ plot(nb, coordinates(jtw_driving_akl_SA2_cas_dep_proj_sp_2), add=TRUE, col = 're
 ```
 ### 5g. Equi distance grid
 
-```{r}
-
-mapview(sa2_clipped_proj_akl)
-
-grid_spacing <- 1000 # 1000 meters
-
-
-regional_sf <- st_read("../data/statsnzregional-council-2018-clipped-generalised-SHP/regional-council-2018-clipped-generalised.shp")
-
-mapview(regional_sf)
-
-mapview(regional_sf[regional_sf$REGC2018_1 == 'Auckland Region', ])
-
-polygony <- st_make_grid(regional_sf[regional_sf$REGC2018_1 == 'Auckland Region', ], square = T, cellsize = c(grid_spacing, grid_spacing)) %>% # the grid, covering bounding box
-  st_sf()
-
-
-plot(polygony, col = 'white')
-plot(st_geometry(regional_sf[regional_sf$REGC2018_1 == 'Auckland Region', ]), add = T)
-
-# this is the correct way of doing it?
-plot(st_geometry(regional_sf[regional_sf$REGC2018_1 == 'Auckland Region', ]), col = 'white')
-plot(polygony[regional_sf[regional_sf$REGC2018_1 == 'Auckland Region', ]], col = '#ff000088', add = TRUE)
-
-
-##################
-
-
-polygony <- st_make_grid(sa2_clipped_proj_akl, square = T, cellsize = c(grid_spacing, grid_spacing)) %>% # the grid, covering bounding box
-  st_sf() # not really required, but makes the grid nicer to work with later
-
-
-plot(polygony, col = 'white')
-plot(st_geometry(sa2_clipped_proj_akl), add = T)
-
-# https://stackoverflow.com/questions/53789313/creating-an-equal-distance-spatial-grid-in-r
-
-library(dplyr)
-library(RCzechia) # a package of Czech administrative areas
-library(sf)
-
-
-mesto <- kraje() %>% # All Czech NUTS3 ...
-  filter(NAZ_CZNUTS3 == 'Hlavní město Praha') %>% # ... city of Prague
-  st_transform(5514) # a metric CRS 
-
-grid_spacing <- 1000  # size of squares, in units of the CRS (i.e. meters for 5514)
-
-polygony <- st_make_grid(mesto, square = T, cellsize = c(grid_spacing, grid_spacing)) %>% # the grid, covering bounding box
-  st_sf() # not really required, but makes the grid nicer to work with later
-
-plot(polygony, col = 'white')
-plot(st_geometry(mesto), add = T)
-
-
-
-
-```
+https://stackoverflow.com/questions/53789313/creating-an-equal-distance-spatial-grid-in-r
 
 
 ```{r}
-
-plot(st_make_grid(what = "centers"), axes = TRUE)
-plot(st_make_grid(what = "corners"), add = TRUE, col = 'green', pch=3)
-sfc = st_sfc(st_polygon(list(rbind(c(0,0), c(1,0), c(1,1), c(0,0)))))
-plot(st_make_grid(sfc, cellsize = .1, square = FALSE))
-plot(sfc, add = TRUE)
-# non-default offset:
-plot(st_make_grid(sfc, cellsize = .1, square = FALSE, offset = c(0, .05 / (sqrt(3)/2))))
-plot(sfc, add = TRUE)
-
-nc = read_sf(system.file("shape/nc.shp", package="sf"))
-g = st_make_grid(nc)
-plot(g)
-plot(st_geometry(nc), add = TRUE)
-# g[nc] selects cells that intersect with nc:
-plot(g[nc], col = '#ff000088', add = TRUE)
-
-plot(g[nc])
-
-```
-
-
-```{r}
-class(sa2_clipped_proj_akl)
 
 ## create a grid of size 500
-g <- st_make_grid(sa2_clipped_proj_akl, cellsize = 500) ###
+g <- st_make_grid(sa2_clipped_proj_akl, cellsize = 500) ### 500meters x 500meters
 plot(g)
 plot(st_geometry(sa2_clipped_proj_akl), add = TRUE)
 plot(g[sa2_clipped_proj_akl], col = '#ff000088', add = TRUE)
@@ -1527,17 +1446,61 @@ plot(g[sa2_clipped_proj_akl], col = '#ff000088', add = TRUE)
 ##plotting it in mapview
 mapview(g[sa2_clipped_proj_akl])
 
-class(g[sa2_clipped_proj_akl])
-
 
 SA2_akl_proj_grid <- g[sa2_clipped_proj_akl]
 
-class(cas_data_akl_proj)
+
+## getting the number of crashes per polygon
+
+sa2_s2_grid_df <- data.frame(cas_points = lengths(st_intersects(SA2_akl_proj_grid, cas_data_akl_proj)))
+
+sa2_s2_grid_sf <- st_sf(sa2_s2_grid_df, geometry = SA2_akl_proj_grid )
+
+## notice that the hot spot is in auckland city
+mapview(sa2_s2_grid_sf)
+
+## only interested where polygon have at least one crash points that intersects with it
+## remember grid size is 500m x 500m
+mapview(sa2_s2_grid_sf[sa2_s2_grid_sf$cas_points > 0,  ], layer.name = "total crashes")
+
+## it seems that a cas point only intersects with one polygon.
+## no cas point intersedts with more than one polygon
+sum(sa2_s2_grid_sf$cas_points)
+nrow(cas_data_akl_proj)
+```
 
 
+
+```{r}
+## is the hotspot the same if we only look at 2018
+
+sa2_s2_grid_2018_df <- data.frame(cas_points = lengths(st_intersects(SA2_akl_proj_grid, cas_data_akl_proj[cas_data_akl_proj$crashYear == 2018, ])))
+
+sa2_s2_grid_2018_sf <- st_sf(sa2_s2_grid_2018_df, geometry = SA2_akl_proj_grid )
+
+## notice that the hot spot is in auckland city
+mapview(sa2_s2_grid_2018_sf)
+
+## only interested where polygon have at least one crash points that intersects with it
+## remember grid size is 500m x 500m
+mapview(sa2_s2_grid_2018_sf[sa2_s2_grid_2018_sf$cas_points > 0,  ], layer.name = "2018 total crashes")
 
 
 ```
+
+```{r}
+
+library(plainview)
+library(leafsync)
+
+m1 <- mapview(sa2_s2_grid_2018_sf[sa2_s2_grid_2018_sf$cas_points > 0,  ], layer.name = "2018crashes")
+m2 <- mapview(sa2_s2_grid_sf[sa2_s2_grid_sf$cas_points > 0,  ], layer.name = "Total crashes")
+
+sync(m1, m2)
+
+
+```
+
 
 ########################## END ###########################
 
