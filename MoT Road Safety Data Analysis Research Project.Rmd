@@ -413,7 +413,7 @@ test <- lapply(1:5,
 ```{r}
 
 ## outliers
-mapview(at_traffic_count_2018_proj[at_traffic_count_2018_proj$total_drivers_within_20m > 5000, c(2:17, 25:27)])
+mapview(at_traffic_count_2018_proj[at_traffic_count_2018_proj$total_drivers_within_20m > 5000, c(2:17, 25:27)], layer.name = "AT traffic counter outliers")
 
 mapview(at_traffic_count_2018_proj[ at_traffic_count_2018_proj$Direction == "Both", c(2:17, 25:27)])
 
@@ -789,6 +789,16 @@ library(s20x)
 cas_dep_fit <- lm(formula = cas_per_SA2_res ~ SA2_average_NZDep2018, 
                   data = jtw_driving_akl_SA2_cas_dep2)
 
+plot(cas_per_SA2_res ~ SA2_average_NZDep2018, 
+     data = jtw_driving_akl_SA2_cas_dep2)
+
+##assumptions check
+normcheck(cas_dep_fit)
+
+##check if there are any influential outliers
+##rule of thumb, an observation is influential if cook's distance is greater than the value 0.4 or the removal of the point changes any parameter estimates by more than one standard error
+cooks20x(cas_dep_fit)
+
 summary(cas_dep_fit)
 
 anova(cas_dep_fit)
@@ -800,6 +810,17 @@ summary1way(cas_dep_fit)
 
 cis[cis[, 4]< .05, ] # Obtain significant deprivation index and count of cas points combinations at the 5% level
 
+#the model only explains 5.67% of variability of crash points from the SA2 source
+
+## Deprivation index 5, on average, has fewer crash points from SA2 source than
+
+- Dep Index 2 by 1 to 25 crash points
+- Dep Index 3 by 1 to 25 crash points
+- Dep Index 7 by 29 to 33 crash points
+- Dep Index 8 by 2 to 29 crash points
+- Dep Index 9 by 7 to 35 crash points
+
+## Deprivation index 4, on average, has fewer crash points from SA2 source than dep index 9 by 1 to 29  points.
 
 ```
 
@@ -860,7 +881,113 @@ mapview(cas_data_akl_geo)
 
 ```
 
+#### i. crash points vs distance of the route
 
+jtw_driving_akl_with_routes
+- data contains routes for each source and destination, and the total number of cas points
+
+```{r}
+## remember there are 102 source destination pair that do not have a route
+sum(st_is_empty(jtw_driving_akl_with_routes))
+
+d <- jtw_driving_akl_with_routes[!st_is_empty(jtw_driving_akl_with_routes), ]
+
+##clearly there are 3 outliers
+##commuter drove from mt wellington auckland to melrose wellington
+plot(cas_within_5m ~ dist, data = d)
+
+max(d$dist) # 639,252 meters travelled
+
+plot(density(d$dist), main = "Distance travelled density plot")
+
+##wanted to see the route
+mapview(st_geometry(d[d$dist >100000, ]), layer.name = "distance travelled outlier")
+
+plot(density(d[d$dist <=100000, ]$dist), main = "Distance travelled density without outliers plot")
+
+
+
+```
+
+data analysis 
+```{r}
+
+plot(cas_within_5m ~ dist, data = d[d$dist <=100000, ])
+
+## model checking and assumptions
+cas_dist.fit <- lm(cas_within_5m ~ dist, data = d[d$dist <=100000, ])
+
+# equivalence of variance check
+plot(cas_dist.fit, which = 1)
+
+# normality check
+normcheck(cas_dist.fit)
+
+## trendscatter to check if there is some curvature
+trendscatter(cas_within_5m ~ dist, data = d[d$dist <=100000, ])
+
+#checking for outliers
+cooks20x(cas_dist.fit) #anything more than 0.4 is an influential outlier
+
+summary(cas_dist.fit)
+
+confint(cas_dist.fit)
+
+
+```
+
+```{r}
+
+## trying
+cas_dist.fit2 <- lm(cas_within_5m ~ dist + I(dist^2), data = d[d$dist <=100000, ])
+
+plot(cas_dist.fit2, which = 1)
+
+# normality check
+normcheck(cas_dist.fit2)
+
+#checking for outliers
+cooks20x(cas_dist.fit2) #anything more than 0.4 is an influential outlier
+#observation 7244 is an outlier
+
+mapview(d[d$dist <=100000, ][7244, ])
+
+summary(cas_dist.fit2)
+
+#removing the outlier
+cas_dist.fit3 <- lm(cas_within_5m ~ dist + I(dist^2), data = d[d$dist <=100000, ][-c(7244), ])
+
+plot(cas_dist.fit3, which = 1)
+
+# normality check
+normcheck(cas_dist.fit3)
+
+#checking for outliers
+cooks20x(cas_dist.fit3)
+
+summary(cas_dist.fit3)
+
+confint(cas_dist.fit3)
+
+#The scatter plot of cas points vs distance traveled suggested curvature in the relationship.
+
+#We began with a linear model to describe cas points within 5 meters with distance traveled. The residual plot from the fit of a simple linear model showed fairly constant scatter but had strong curvature. So, a quadratic term was added to the linear model.
+
+Our model explained 57% of the variability in crash points within 5 meters
+
+Based on the summary below, the quadratic has slope that decreases with increasing crash points
+
+```
+
+```{r}
+plot(cas_within_5m ~ dist, data = d[d$dist <=100000, ])
+
+o = order(d[d$dist <=100000, ]$dist)
+lines(d[d$dist <=100000, ]$dist[o], fitted(cas_dist.fit)[o], col = "red")
+lines(d[d$dist <=100000, ]$dist[o], fitted(cas_dist.fit2)[o], col = "blue")
+
+
+```
 
 ### 5d. Heat Maps (Kernel Density Estimation) Basic Spatial Point Pattern Analysis in R
 
@@ -1401,6 +1528,7 @@ legend("bottomleft",legend=c("insignificant","low-low","low-high","high-low","hi
        fill=colors,bty="n")
 
 
+
 ```
 
 ### 5f. Getis-Ord
@@ -1496,6 +1624,12 @@ library(leafsync)
 m1 <- mapview(sa2_s2_grid_2018_sf[sa2_s2_grid_2018_sf$cas_points > 0,  ], layer.name = "2018crashes")
 m2 <- mapview(sa2_s2_grid_sf[sa2_s2_grid_sf$cas_points > 0,  ], layer.name = "Total crashes")
 
+sync(m1, m2)
+
+
+```
+
+```{r}
 sync(m1, m2)
 
 
