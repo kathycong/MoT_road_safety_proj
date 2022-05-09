@@ -149,8 +149,6 @@ load("~/Documents/University of Auckland/COMPSCI 791 Research Project/mot_road_s
 
 ```
 
-
-
 ## 3. Data Processing/Modelling
 
 
@@ -185,15 +183,53 @@ get_dist_travel
 
 ```
 
-
 ## 4. CAS Analysis & Validating the Data
 
 ### 4a. Validating the Data
 
+https://at.govt.nz/about-us/reports-publications/traffic-counts/
+
+**New Zealand road widths**
+https://www.drivingtests.co.nz/resources/are-wider-roads-safer-and-how-are-road-widths-decided/
+
+
 - Using Auckland Transport flow data
 
-Interested in both directions of traffic
+We wanted to compare that the simulated routes with the number of traffic the flows into a particular street. We are only interested where the traffic counter counts both directions of the traffic flow.
 
+**Variables of Interest**
+
+`Count Start Date`
+- The date that the 7-day count started.
+- We used this to filter the data as we are only interested on traffic that occured in 2018 so it's like for like with the JTW data
+
+`Description`
+- The exact location of where on the road that the traffic count was placed (GPS coordinates.
+
+`AM peak volume` 
+- The volume of traffic counted in the morning peak hour.
+
+`PM peak volume` 
+- The volume of traffic counted in the afternoon peak hour.
+
+`Midday peak volume`
+- The volume of traffic counted in the midday peak hour.
+
+`Saturday Volume`
+- The total number of vehicles that were counted on Saturday.
+
+`Sunday Volume`
+- The total number of vehicles that were counted on Sunday.
+
+`Direction`
+- Indicates which side of the road the count was on.
+
+`JTW Auckland driving routes`
+- routes simulated using ghroute package
+- these are for commuters who resides in Auckland
+
+`JTW total commuters`
+- the total number of commuters on a given route
 
 
 ```{r}
@@ -230,7 +266,6 @@ rm("at_traffic_count")
 
 
 ```
-
 testing with 5 meters radius
 
 ```{r}
@@ -253,7 +288,6 @@ mapview(jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$SA2_name_usual_r
 ```
 
 testing with 10 meters radius
-
 
 ```{r}
 test <- 
@@ -292,9 +326,7 @@ mapview(jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$SA2_name_usual_r
                         
 ```
 
-**New Zealand road widths**
-https://www.drivingtests.co.nz/resources/are-wider-roads-safer-and-how-are-road-widths-decided/
-
+Data Processing 
 
 ```{r}
 
@@ -334,7 +366,18 @@ dim(jtw_driving_akl_with_routes_proj[st_is_within_distance(jtw_driving_akl_with_
                   col = 'green', 
                   radius = 20) %>% 
     addCircles(data = st_geometry(at_traffic_count_2018_geo[2, ]), color = "red")
+
   
+```    
+
+Comparing 10 meters vs 15 meters vs 20 meters radius
+- it seems that 20 meters captures more signal compared to 10m and 15m as indicated below
+
+`20 meters` - green
+`15 meters` - purple
+`10 meters` - yellow
+
+```{r}
 ## route 1488
     leaflet()%>% 
    addTiles() %>% 
@@ -349,12 +392,23 @@ dim(jtw_driving_akl_with_routes_proj[st_is_within_distance(jtw_driving_akl_with_
                                                     crs = 4326))[1, "X"],
                   col = 'green', 
                   radius = 20) %>% 
+                addCircles( lat = st_coordinates(st_transform(at_traffic_count_2018_proj[1488, ], 
+                                                        crs = 4326))[1, "Y"], 
+                  lng = st_coordinates(st_transform(at_traffic_count_2018_proj[1488, ], 
+                                                    crs = 4326))[1, "X"],
+                  col = 'purple', 
+                  radius = 15) %>% 
+                addCircles( lat = st_coordinates(st_transform(at_traffic_count_2018_proj[1488, ], 
+                                                        crs = 4326))[1, "Y"], 
+                  lng = st_coordinates(st_transform(at_traffic_count_2018_proj[1488, ], 
+                                                    crs = 4326))[1, "X"],
+                  col = 'yellow', 
+                  radius = 10) %>% 
     addCircles(data = st_geometry(at_traffic_count_2018_geo[1488, ]), color = "red")
     
-  
 ```
 
-#### i. calculating the total routes per traffic counter
+#### i. calculating the total routes per 2018 Auckland traffic counter 
 
 ```{r}
 
@@ -364,9 +418,9 @@ dim(jtw_driving_akl_with_routes_proj[st_is_within_distance(jtw_driving_akl_with_
 at_traffic_count_2018_proj$route_within_20m <- lengths(st_is_within_distance(at_traffic_count_2018_proj,
                       jtw_driving_akl_with_routes_proj[(!st_is_empty(jtw_driving_akl_with_routes_proj)), ],
                       dist = 20))
+```
 
-
-
+```{r}
 names(at_traffic_count_2018_proj)
 
 head(at_traffic_count_2018_proj)
@@ -374,12 +428,91 @@ head(at_traffic_count_2018_proj)
 plot(density(at_traffic_count_2018_proj$route_within_20m))
 
 hist(at_traffic_count_2018_proj$route_within_20m, breaks = 100)
+```
+
+
+```{r}
+## number of traffic counters with no route
+sum(at_traffic_count_2018_proj$route_within_20m == 0) #651
+
+## total 2018 traffic counter in auckland
+length(at_traffic_count_2018_proj$route_within_20m) #2331
+
+#30% of the traffic counter doesn't have any routes 
+
+mapview(at_traffic_count_2018_proj[at_traffic_count_2018_proj$route_within_20m == 0, ], 
+        layer.name = "Traffic counter with no routes within 20m",
+        col.regions = "red", cex = 2 ) +
+  mapview(jtw_driving_akl_with_routes_proj, layer.name = "JTW Auckland Routes")
+
 
 
 ```
 
-#### ii. routes that intersected * total commuters
 
+```{r}
+
+traffic_counter_within_20m <- lengths(st_is_within_distance(jtw_driving_akl_with_routes_proj[(!st_is_empty(jtw_driving_akl_with_routes_proj)), ], at_traffic_count_2018_proj, dist = 20))
+
+
+```
+
+##### a. simulated routes vs AM volume
+
+```{r}
+
+plot(`AM Peak Volume` ~ route_within_20m, 
+     data = at_traffic_count_2018_proj, 
+     pch = 19,
+     col="#00000010")
+
+
+plot(`AM Peak Volume` ~ route_within_20m, 
+     data = at_traffic_count_2018_proj[at_traffic_count_2018_proj$route_within_20m <500, ], 
+     pch = 19,
+     col="#00000010")
+
+```
+
+##### b. AM volume vs PM volume
+
+```{r}
+
+plot(`AM Peak Volume` ~ `PM Peak Volume`, 
+     data = at_traffic_count_2018_proj, 
+     pch = 19,
+     col="#00000010")
+
+```
+
+##### c. AM volume vs Mid volume
+
+
+```{r}
+
+plot(`AM Peak Volume` ~ `Mid Peak Volume`, 
+     data = at_traffic_count_2018_proj, 
+     pch = 19,
+     col="#00000010")
+
+```
+
+##### d.  PM volume vs Mid volume
+
+
+```{r}
+
+plot(`PM Peak Volume` ~ `Mid Peak Volume`, 
+     data = at_traffic_count_2018_proj, 
+     pch = 19,
+     col="#00000010")
+
+```
+
+
+
+
+#### ii. routes that intersected * total commuters
 
 ```{r}
 ## removing rows with no routes for simplicity
@@ -409,22 +542,8 @@ test <- lapply(1:5,
 
 ```
 
-
-```{r}
-
-## outliers
-mapview(at_traffic_count_2018_proj[at_traffic_count_2018_proj$total_drivers_within_20m > 5000, c(2:17, 25:27)], layer.name = "AT traffic counter outliers")
-
-mapview(at_traffic_count_2018_proj[ at_traffic_count_2018_proj$Direction == "Both", c(2:17, 25:27)])
-
-ifelse(at_traffic_count_2018_proj$Direction == "Both", )
-
-at_traffic_count_2018_proj$total_drivers_within_20m
-
-```
-
-
 #### iii. density plots of Traffic volumes
+
 ```{r}
 
 plot(density(at_traffic_count_2018_proj$total_drivers_within_20m), col = 'red', main = "")
@@ -434,12 +553,28 @@ lines(density(at_traffic_count_2018_proj$`Mid Peak Volume`), col = 'purple')
 lines(density(at_traffic_count_2018_proj$`5 Day ADT`, na.rm = TRUE), col = 'orange')
 legend("topright", c("Total drivers within 20m radius", "AM Peak Volume", "PM Peak Volume", "Mid Peak Volume", "5 Day ADT"), col=c("red", "blue", "green", "purple", "orange"), lwd = 3, bty='n', xpd=NA)
 
+# our prediction versus the traffic count volume
+# compare by observations, for each traffic point compare it with what we predicted through routes intersects (scatter plot)
+# we only carem plot AM vs Mid , AM vs PM (scatter plot)
+# in theory we only compare AM vs total 
+
+```
+
+#### iv. Outliers
+
+```{r}
+
+## outliers
+mapview(at_traffic_count_2018_proj[at_traffic_count_2018_proj$total_drivers_within_20m > 5000, c(2:17, 25:27)], layer.name = "AT traffic counter outliers")
+
+#mapview(at_traffic_count_2018_proj[ at_traffic_count_2018_proj$Direction == "Both", c(2:17, 25:27)])
 
 ```
 
 
-
 ### 4b. Cas data 
+
+- It was of interest to cluster the cas points to understand if there are particular areas of interests that had high volume of crash points irrespective of the crash severity and crash year
 
 #### i. using leaflet marker cluster
 
@@ -459,7 +594,12 @@ leaflet(cas_data_akl_2018_geo) %>%
 
 ```{r}
 
-mapview(cas_data_akl_geo[1:12000, ], alpha = 0.1,  alpha.regions = 0.1, cex = 2)
+mapview(cas_data_akl_geo[cas_data_akl_geo$crashSeverity != "Non-Injury Crash", ], 
+        alpha = 0.05,  
+        alpha.regions = 0.05, 
+        layer.name = "Injury Crash for all crash years",
+        cex = 2) #change alpha from 0.1 to 0.05
+
 
 ```
 
@@ -586,6 +726,8 @@ ggplot(data = dplyr::filter(cas_data_akl_SA2_per_year, total_all_years > 1000)
 ```
 
 
+
+
 ### 5b. Calculating meshblock/SA2 relative to crash point that occurred in 2018
 
 The NZDep is an area-based measure, which measures the level of deprivation for people in each small area and is based on nine Census 2018 variables (NZDep2018).
@@ -668,6 +810,16 @@ mapview(jtw_driving_akl_SA2_cas_dep[c("SA2_name_usual_residence_address", "total
 ```
 
 
+```{r}
+## using square root transformation
+mapview(jtw_driving_akl_SA2_cas_dep[c("SA2_name_usual_residence_address", "total_cas_SA2_source", "total_driving_travellers", "total_traveler_times_cas", "cas_per_SA2_res", "SA2_average_NZDep2018", "SA2_average_NZDep2018_score")] %>% 
+          mutate(cas_per_SA2_res = sqrt(cas_per_SA2_res)),  
+        zcol = "cas_per_SA2_res", 
+        alpha = 0.1,
+        layer.name = "Total Crash points per SA2 (normalise) - sqr root transformed")
+
+```
+
 #### i. Looking deeper into Pukekohe Central
 
 - JTW data only has one observation where the usual residence is Pukekohe Central. The commuter travelled from Pukekohe to Shortland St.
@@ -716,11 +868,18 @@ top_10 <- jtw_driving_akl_SA2_cas_dep2[with(jtw_driving_akl_SA2_cas_dep2,
 ((top_10 <- top_10[1:10,]))
 
 
-mapview(jtw_driving_akl_SA2_cas_dep2[c("SA2_name_usual_residence_address", "total_cas_SA2_source", "total_driving_travellers", "total_traveler_times_cas", "cas_per_SA2_res", "SA2_average_NZDep2018", "SA2_average_NZDep2018_score")], 
+
+```
+
+```{r}
+mapview(jtw_driving_akl_SA2_cas_dep2[c("SA2_name_usual_residence_address", "total_cas_SA2_source", "total_driving_travellers", "total_traveler_times_cas", "cas_per_SA2_res", "SA2_average_NZDep2018", "SA2_average_NZDep2018_score")] %>% mutate(cas_per_SA2_res = sqrt(cas_per_SA2_res)), 
         zcol = "cas_per_SA2_res", 
         alpha = 0.1,
         layer.name = "Total Crash points per SA2 (normalise)")
+
+## square root transformation (REMEMBER)
 ```
+
 
 #### iii. Total Cas point by Total Route Distance
 
@@ -747,8 +906,11 @@ hist(jtw_driving_akl_with_routes[which(jtw_driving_akl_with_routes$dist < 600000
 plot(round(jtw_driving_akl_with_routes[which(jtw_driving_akl_with_routes$dist < 600000),][["dist"]]/1000, 0),
      jtw_driving_akl_with_routes[which(jtw_driving_akl_with_routes$dist < 600000),][["cas_within_5m"]], 
      xlab = "distance traveled (km)",
-     ylab = "crash points",
+     ylab = "crash points", pch=19, col="#00000010"
      )
+
+##classify the routes by there riskiness
+##crash points per distance travelled
 
 ```
 
@@ -780,7 +942,6 @@ boxplot(cas_per_SA2_res ~ SA2_average_NZDep2018, data = jtw_driving_akl_SA2_cas_
 ```{r}
 
 library(s20x)
-
 
 ## fit a linear model
 #cas_dep_fit <- lm(formula = total_cas_SA2_source ~ SA2_average_NZDep2018, 
@@ -877,7 +1038,7 @@ cas_data_2018_akl <- st_sf( cas_data_2018_akl[!names(cas_data_2018_akl) %in% c("
 mapview(cas_data_2018_akl, zcol = c("total"), alpha.region = 0.4, lwd = 0)
 
 
-mapview(cas_data_akl_geo)
+#mapview(cas_data_akl_geo)
 
 ```
 
@@ -1352,6 +1513,13 @@ jtw_driving_akl_SA2_cas_dep_proj_sp <- as_Spatial(jtw_driving_akl_SA2_cas_dep_pr
 neighbours <- poly2nb(jtw_driving_akl_SA2_cas_dep_proj_sp)
 neighbours
 
+
+
+```
+
+##### Rook's Contiguity
+
+```{r}
 ##plotting the links between neighbours to visualise their distribution across space
 
 plot(jtw_driving_akl_SA2_cas_dep_proj_sp, border = 'lightgrey')
@@ -1360,10 +1528,8 @@ plot(neighbours, coordinates(jtw_driving_akl_SA2_cas_dep_proj_sp), add = TRUE, c
 ## NOTE: Default contiguity is Queen. 
 ## Spatial weights are how we determine the area’s neighborhood. There are different statistical methods that are used for determining spatial weights, and it is beyond this to provide an in-depth explanation of each in this article. One of the most commonly used spatial weights methods is Queen Contiguity Matrix, which we use. 
 
-
 ```
 
-##### Rook's Contiguity
 
 ```{r}
 ## Calculate the Rook's case neighbours
@@ -1546,7 +1712,7 @@ Define a new set of neighbors. Whilst the spatial autocrrelation considered unit
 jtw_driving_akl_SA2_cas_dep_proj_sp_2
 
 # creates centroid and joins neighbours within 0 and x units (trialing 1500m)
-nb <- dnearneigh(coordinates(jtw_driving_akl_SA2_cas_dep_proj_sp_2),0,1000) 
+nb <- dnearneigh(coordinates(jtw_driving_akl_SA2_cas_dep_proj_sp_2),0,200) 
 
 # creates listw
 nb_lw <- nb2listw(nb, style = 'B')
@@ -1555,13 +1721,17 @@ nb_lw <- nb2listw(nb, style = 'B')
 plot(jtw_driving_akl_SA2_cas_dep_proj_sp_2, border = 'lightgrey')
 plot(nb, coordinates(jtw_driving_akl_SA2_cas_dep_proj_sp_2), add=TRUE, col = 'red')
 
-
+jtw_driving_akl_SA2_cas_dep_proj_sp_2@data
 
 ```
 ### 5g. Equi distance grid
 
 https://stackoverflow.com/questions/53789313/creating-an-equal-distance-spatial-grid-in-r
 
+Created 500m x 500m grid to use as kernel density plot.
+
+As discussed with Simon, areas were it is dense is usually on the motorway.
+Area is quite dense as well in Auckland central, in Newton Junction.
 
 ```{r}
 
@@ -1597,8 +1767,6 @@ sum(sa2_s2_grid_sf$cas_points)
 nrow(cas_data_akl_proj)
 ```
 
-
-
 ```{r}
 ## is the hotspot the same if we only look at 2018
 
@@ -1628,6 +1796,8 @@ sync(m1, m2)
 
 
 ```
+
+**2018 vs Total Crashes**
 
 ```{r}
 sync(m1, m2)
