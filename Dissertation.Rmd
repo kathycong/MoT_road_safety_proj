@@ -32,6 +32,18 @@ we wanted to create an R Package so that we calcu
 
 ## 1.3 Research Objectives
 
+Overall Aim/Goal of the Project
+- MoT are looking to adapt trafficalmr
+- Adding value to road safety policies that can help the lives of New Zealanders
+- Better safety outcomes for active transport modes
+- this project will set the data foundations for adapting trafficalmr to the New Zealand context and enable policy/traffic calming intervention analyses.
+- The main part of the work will involve data processing. But the variety of the data will keep the work interesting - the work involves geospatial datasets (raw and derived), APIs (Cyclestreets, OpenStreetMap) and census datasets
+- The policy analysis will use the developed data foundations to estimate the casualty rate per billion kilometres for walking and cycling to work commutes
+- Data visualisation and data communication will be an ideal closing point for this project.
+
+trafficalmr open source project (in R)
+- an initiative from the UK that seeks to automate and analyse: risk exposure, traffic casualty and intervention indicators to better understand road safety outcomes in the UK.
+
 ## 1.4 Contributions
 
 ## 1.5 Overview of Approach
@@ -61,13 +73,19 @@ Wanted to set the scene on the relevance of road safety, how New Zealand's road 
 ## 2.1 Road Safety
 
 ## 2.2 Policies on Road Safety
+- Currently Road Safety Policies in new zealand
 
 ## 2.3 Exposure
 
 ## 2.4 Risk
 - compare why some methodologies are using time travelled vs distance travelled. Why are we using distance travelled in this project
 
-## 2.6 Simulating Routes
+## 2.5 Geocomputation/Spatial Analysis
+- what is geocomputation or Spatial Data Analysis
+
+## 2.6 Hotspot Analysis
+- KDE
+- Autocorrelation
 
 
 ## Summary
@@ -86,7 +104,11 @@ The research outcomes are critically evaluated (reporting strengths and weakness
 
 ## 3.1 Assumptions
 
-- Assuming that start and end of the journey of a commuter is  
+- Assuming that start and end of the journey of a commuter using driving as a method for driving is the centroid of SA2
+
+- Due to data sensitivity, stats NZ does not provide actual start and end coordinates of each travel
+
+- We assumed that the router provides the best route from source to destination
 
 ## 3.2 Overview
 
@@ -102,9 +124,15 @@ The research outcomes are critically evaluated (reporting strengths and weakness
 
 # 4 Experimental Design
 
-## 4.1 Implementation
 
-## 4.2 Datasets
+## 4.1 Implementation
+- 
+
+## 4.2 Validating Route Simulation
+- Validating the the routes 
+
+
+## 4.3 Datasets
 
 ### a. Journey to work data
 
@@ -124,7 +152,11 @@ The research outcomes are critically evaluated (reporting strengths and weakness
 
 # 5 Results
 
+## 5.1 Usual Residence Plot
 
+## 5.2 Usual Work Plot
+
+## 5.3 
 
 # 6 Conclusion
 
