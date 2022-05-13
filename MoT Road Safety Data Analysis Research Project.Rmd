@@ -461,17 +461,31 @@ traffic_counter_within_20m <- lengths(st_is_within_distance(jtw_driving_akl_with
 
 ```{r}
 
-plot(`AM Peak Volume` ~ route_within_20m, 
+
+plot(`AM Peak Volume` ~ total_drivers_within_20m, 
+     data = at_traffic_count_2018_proj, 
+     pch = 19,
+     col="#00000010")
+
+plot(`AM Peak Volume` ~ total_drivers_within_20m, 
+     data = at_traffic_count_2018_proj[at_traffic_count_2018_proj$route_within_20m > 0, ], 
+     pch = 19,
+     col="#00000010", asp = 1, xlim = c(0,4000))
+
+plot(`AM Peak Volume` + `Mid Peak Volume` ~ route_within_20m, 
      data = at_traffic_count_2018_proj, 
      pch = 19,
      col="#00000010")
 
 
-plot(`AM Peak Volume` ~ route_within_20m, 
+plot(`AM Peak Volume` + `Mid Peak Volume` ~ route_within_20m, 
      data = at_traffic_count_2018_proj[at_traffic_count_2018_proj$route_within_20m <500, ], 
      pch = 19,
      col="#00000010")
 
+# can we use car in Akl traffic data to get the proportion of commuter volumes
+# indicates the performance of our simulator
+# 
 ```
 
 ##### b. AM volume vs PM volume
@@ -879,6 +893,14 @@ mapview(jtw_driving_akl_SA2_cas_dep2[c("SA2_name_usual_residence_address", "tota
 
 ## square root transformation (REMEMBER)
 ```
+```{r}
+
+## we wanted to segment deprivation index
+mapview(jtw_driving_akl_SA2_cas_dep2 %>% mutate(cas_per_SA2_res_sqrt = sqrt(cas_per_SA2_res)), 
+        zcol = "SA2_average_NZDep2018",
+        layer.name = "Deprivation index by SA2 polygon")
+```
+
 
 
 #### iii. Total Cas point by Total Route Distance
@@ -902,7 +924,9 @@ jtw_driving_akl_with_routes[which(jtw_driving_akl_with_routes$dist > 600000), ]
 hist(jtw_driving_akl_with_routes[which(jtw_driving_akl_with_routes$dist < 600000),][["dist"]]
 , breaks = 100)
 
+```
 
+```{r}
 plot(round(jtw_driving_akl_with_routes[which(jtw_driving_akl_with_routes$dist < 600000),][["dist"]]/1000, 0),
      jtw_driving_akl_with_routes[which(jtw_driving_akl_with_routes$dist < 600000),][["cas_within_5m"]], 
      xlab = "distance traveled (km)",
@@ -911,6 +935,18 @@ plot(round(jtw_driving_akl_with_routes[which(jtw_driving_akl_with_routes$dist < 
 
 ##classify the routes by there riskiness
 ##crash points per distance travelled
+
+```
+
+#### iv. risk
+```{r}
+
+#quantifying the riskiness of the route, risk per km. number of crash per km 
+
+jtw_driving_akl_with_routes$risk <- jtw_driving_akl_with_routes$cas_within_5m/
+  (jtw_driving_akl_with_routes$dist/1000)
+
+plot(density(jtw_driving_akl_with_routes$risk, na.rm = T), main = "crash points per km distance travelled")
 
 ```
 
@@ -1042,6 +1078,7 @@ mapview(cas_data_2018_akl, zcol = c("total"), alpha.region = 0.4, lwd = 0)
 
 ```
 
+
 #### i. crash points vs distance of the route
 
 jtw_driving_akl_with_routes
@@ -1141,7 +1178,7 @@ Based on the summary below, the quadratic has slope that decreases with increasi
 ```
 
 ```{r}
-plot(cas_within_5m ~ dist, data = d[d$dist <=100000, ])
+plot(cas_within_5m ~ dist, data = d[d$dist <=100000, ], pch = 19, col="#00000010")
 
 o = order(d[d$dist <=100000, ]$dist)
 lines(d[d$dist <=100000, ]$dist[o], fitted(cas_dist.fit)[o], col = "red")
@@ -1149,6 +1186,7 @@ lines(d[d$dist <=100000, ]$dist[o], fitted(cas_dist.fit2)[o], col = "blue")
 
 
 ```
+
 
 ### 5d. Heat Maps (Kernel Density Estimation) Basic Spatial Point Pattern Analysis in R
 
@@ -1438,6 +1476,7 @@ dn <- tm_shape(sa2_clipped_proj_akl_sp) +
 
 
 ```
+
 
 ### 5e. Spatial Autocorrelation
 https://data.cdrc.ac.uk/system/files/practical9_0.html
