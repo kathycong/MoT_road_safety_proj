@@ -3,19 +3,45 @@ title: "Road Safety Dissertation"
 author: "Kathlyn Ycong"
 date: '2022-05-12'
 output: word_document
+
+
 ---
 
 # Abstract
 
-Abstract should contain a brief summary of the aim, methodologies, finds and conclusions of the disseration. That abstract should normally be fewer than 350 words.
+Abstract should contain a brief summary of the aim, methodologies, finds
+and conclusions of the disseration. That abstract should normally be
+fewer than 350 words.
 
 # Acknowledgement
 
 # 1 Introduction
 
-The purpose is to describe the general subject area, state the research problem of interest, outline the main results of the thesis, and put the results in context with wider subject area and its applications.
+The purpose is to describe the general subject area, state the research
+problem of interest, outline the main results of the thesis, and put the
+results in context with wider subject area and its applications.
 
-The main body of the text must be divided into a logical scheme which is followed consistently throughout the work. It usually starts with an introduction chapter and ends with a conclusion.
+The main body of the text must be divided into a logical scheme which is
+followed consistently throughout the work. It usually starts with an
+introduction chapter and ends with a conclusion.
+
+## inspiration of this project
+
+https://saferactive.github.io/trafficalmr/articles/report1.html
+
+SaferActive project is the inspiration for this research. The SaferActive project is funded by the United Kingdom (UK) Department for Transport in support of aims to outlined in the cycling and walking investment strategy (CWIS): to double the number of stages cycled compared with the baseline year of 2013, and "reverse the decline in walking)" whilst reducing the casualty rate per km walked and cycled year on year. 
+
+The methods of estimating safety in the more commonly used units of killed and seriously injured per billion km (KSI/bkm), and outline progress in collecting, analysing and modelling datasets that will be used in subsequent steps of the project. 
+
+April 2020 is the inception of the project. They were able to develop a new R package, trafficalmr, to automate the access and analysis of exposure data, casualty data and intervention data. 
+
+Collected and preprocessed data from a wide range of source to support next steps in the project. 
+
+Explored various geographic, interactive and static visualisation options, including who-hit-who visualisations using 'upset plots'
+
+Analysed the variability of estimated walking and cycling risk per bkm (section 8)
+
+Crreated a prototype web app to visualise road safety data as basis for considering next steps.
 
 
 ## 1.1 Motivation
@@ -24,143 +50,603 @@ we wanted to create an R Package so that we calcu
 
 ## 1.2 Problem Statement
 
-- The research problem is clearly and concisely **defined** (e.g. as research questions).
+-   The research problem is clearly and concisely **defined** (e.g. as
+    research questions).
 
-- The research is clearly **motivated**, i.e. its importance is explained
+-   The research is clearly **motivated**, i.e. its importance is
+    explained
 
-- The **scope** of the research done in the project is clearly stated.
+-   The **scope** of the research done in the project is clearly stated.
 
 ## 1.3 Research Objectives
 
-Overall Aim/Goal of the Project
-- MoT are looking to adapt trafficalmr
-- Adding value to road safety policies that can help the lives of New Zealanders
-- Better safety outcomes for active transport modes
-- this project will set the data foundations for adapting trafficalmr to the New Zealand context and enable policy/traffic calming intervention analyses.
-- The main part of the work will involve data processing. But the variety of the data will keep the work interesting - the work involves geospatial datasets (raw and derived), APIs (Cyclestreets, OpenStreetMap) and census datasets
-- The policy analysis will use the developed data foundations to estimate the casualty rate per billion kilometres for walking and cycling to work commutes
-- Data visualisation and data communication will be an ideal closing point for this project.
+Overall Aim/Goal of the Project - MoT are looking to adapt trafficalmr -
+Adding value to road safety policies that can help the lives of New
+Zealanders - Better safety outcomes for active transport modes - this
+project will set the data foundations for adapting trafficalmr to the
+New Zealand context and enable policy/traffic calming intervention
+analyses. - The main part of the work will involve data processing. But
+the variety of the data will keep the work interesting - the work
+involves geospatial datasets (raw and derived), APIs (Cyclestreets,
+OpenStreetMap) and census datasets - The policy analysis will use the
+developed data foundations to estimate the casualty rate per billion
+kilometres for walking and cycling to work commutes - Data visualisation
+and data communication will be an ideal closing point for this project.
 
-trafficalmr open source project (in R)
-- an initiative from the UK that seeks to automate and analyse: risk exposure, traffic casualty and intervention indicators to better understand road safety outcomes in the UK.
+trafficalmr open source project (in R) - an initiative from the UK that
+seeks to automate and analyse: risk exposure, traffic casualty and
+intervention indicators to better understand road safety outcomes in the
+UK.
 
 ## 1.4 Contributions
 
 ## 1.5 Overview of Approach
 
 ## 1.6 Scope & Structure
-- The scope of the research is 
+
+-   The scope of the research is
 
 for commuters that are travelling from their usual residence to work
 
-
 # 2 Related Work
 
-- An appropriate number and range of related works is cited ( >= 20 for dissertation)
+-   An appropriate number and range of related works is cited ( \>= 20
+    for dissertation)
 
-- Related work is appropriately organised (e.g. using subsections or tables)
+-   Related work is appropriately organised (e.g. using subsections or
+    tables)
 
-- Important concepts and contributions of related work are explained
+-   Important concepts and contributions of related work are explained
 
-- Related work is discussed in relation to teh research problem and proposed solution
+-   Related work is discussed in relation to teh research problem and
+    proposed solution
 
-- Gaps in the knowledge about the research problem are identified to explain the novelty of the research in the report.
+-   Gaps in the knowledge about the research problem are identified to
+    explain the novelty of the research in the report.
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Wanted to set the scene on the relevance of road safety, how New Zealand's road safety measure compared to other countries. 
+Wanted to set the scene on the relevance of road safety, how New
+Zealand's road safety measure compared to other countries.
 
 ## 2.1 Road Safety
 
 ## 2.2 Policies on Road Safety
-- Currently Road Safety Policies in new zealand
+
+-   Currently Road Safety Policies in new zealand
 
 ## 2.3 Exposure
 
 ## 2.4 Risk
-- compare why some methodologies are using time travelled vs distance travelled. Why are we using distance travelled in this project
+
+-   compare why some methodologies are using time travelled vs distance
+    travelled. Why are we using distance travelled in this project
 
 ## 2.5 Geocomputation/Spatial Analysis
-- what is geocomputation or Spatial Data Analysis
+
+-   what is geocomputation or Spatial Data Analysis
 
 ## 2.6 Hotspot Analysis
-- KDE
-- Autocorrelation
 
+-   KDE
+-   Autocorrelation
+
+## 2.7 Trafficalmr
 
 ## Summary
 
 # 3 Methodology and Data Analysis
 
-- The methodology used to address the research problem is clearly specified so that an independent research could replicate the results.
+-   The methodology used to address the research problem is clearly
+    specified so that an independent research could replicate the
+    results.
 
-- All important concepts used in research are clearly explained
+-   All important concepts used in research are clearly explained
 
-- Statements and claims are appropriately supported with results or evidence, e.g. by citing related work.
+-   Statements and claims are appropriately supported with results or
+    evidence, e.g. by citing related work.
 
-Assumptions and limitations of the research of the research are stated and their implications discussed.
+Assumptions and limitations of the research of the research are stated
+and their implications discussed.
 
-The research outcomes are critically evaluated (reporting strengths and weaknesses)
+The research outcomes are critically evaluated (reporting strengths and
+weaknesses)
 
 ## 3.1 Assumptions
 
-- Assuming that start and end of the journey of a commuter using driving as a method for driving is the centroid of SA2
+-   Assuming that start and end of the journey of a commuter using
+    driving as a method for driving is the centroid of SA2
 
-- Due to data sensitivity, stats NZ does not provide actual start and end coordinates of each travel
+-   Due to data sensitivity, stats NZ does not provide actual start and
+    end coordinates of each travel
 
-- We assumed that the router provides the best route from source to destination
+-   We assumed that the router provides the best route from source to
+    destination
 
 ## 3.2 Overview
 
 ## 3.3 Limitations
 
-- The most recent latest journey to work data is 2018. Noting that due to COVID and changes over time, journey to work have changed.
+-   The most recent latest journey to work data is 2018. Noting that due
+    to COVID and changes over time, journey to work have changed.
 
 ## 3.4 Simulating Routes
 
 ## 3.5 Getting the Distance Travelled
 
-## 3.6 Summary
+## 3.6 Route Riskiness
+
+## 3.7
+
+## 3.7 Summary
 
 # 4 Experimental Design
 
-
 ## 4.1 Implementation
-- 
+
+### 
 
 ## 4.2 Validating Route Simulation
-- Validating the the routes 
 
+-   Validating the the routes
 
 ## 4.3 Datasets
 
+
+```{r}
+# libraries required
+
+library(sf)
+library(ghroute)
+router(osm.file = "~/Documents/University of Auckland/COMPSCI 791 Research Project/mot_road_safety_project/osm/new-zealand-latest.osm.pbf")
+library(leaflet)
+library(mapview)
+library(readxl)
+library(dplyr)
+library(ggplot2)
+library(tmap)
+library(grid) # display side by side plot
+
+```
+
+
+```{r}
+
+# Datasets from the package
+
+load("~/Documents/University of Auckland/COMPSCI 791 Research Project/mot_road_safety_project/motroadsafetytest/data/jtw_driving_akl.rda")
+
+load("~/Documents/University of Auckland/COMPSCI 791 Research Project/mot_road_safety_project/motroadsafetytest/data/sa2_clipped_geo_akl.rda")
+
+
+```
+
+```{r}
+
+## SA2 to MB mapping provided by StatsNZ
+key <- read_xlsx("../data/Stats NZ Geographic Key.xlsx", 
+           sheet = "Geographic Key")
+
+## need to change data type of MBs so we can join it with df
+key$MB2018_V1_00 <- as.character(key$MB2018_V1_00)
+
+## correcting Territorial auth desc name
+names(key)[8] <- "Territorial_auth_desc"
+
+## grouping by SA2 and territorial auth district to remove duplicates
+key_2 <- key[, c(3,8)] %>% 
+  group_by(`Statistical area 2 code (2018 areas)`, Territorial_auth_desc) %>% 
+  summarise(n = n()) %>% 
+  mutate(`Statistical area 2 code (2018 areas)` = 
+           as.integer(`Statistical area 2 code (2018 areas)`))
+
+```
+
+
+
+
 ### a. Journey to work data
+
+<https://datafinder.stats.govt.nz/table/104720-2018-census-main-means-of-travel-to-work-by-statistical-area-2/>
+
+The 2018 Census commuter view dataset contains the employed census
+usually resident population count aged 15 years and over by Statistical
+area 2 for the main means of travel to work variable from the 2018
+census. The geography corresponds to 2018 boundaries.
+
+This dataset is the base data for the 'there and back again: **our daily
+commute competition**. - look this up
+
+This 2018 Census commuter view dataset is displayed by Statistical area2
+geography and contains from-to (journey) information on an individual's
+usual residence and workplace address\* by main means of travel to work.
+
+-   Workplace address is coded from information supplied by respondents
+    about their workplaces. Where respondents do not supply sufficient
+    information, their responses are coded to 'not further defined'. The
+    2018 Census commuter view datasets excludes these 'not further
+    defined' areas, as such the sume of the counts for each region in
+    this dataset may not be equal to teh total employed census usually
+    resident population count aged 15 years and over for that region.
+
+The data uses fixed random rounding to protect confidentiality. Counts
+of less than 6 are suppressed according to 2018 confidentiality rules.
+Values of -999 indicate supressed data.
+
+Data quality ratings for 2018 Census variables, summarising the quality
+rating and priority levels for 2018 Census variables, are available.
+
+using JTW data
+
+https://at.govt.nz/about-us/reports-publications/2018-census/
+
+Auckland Transport is the organisation responsible for all transport services (excluding state highways) from roads and footpaths, to cycling parking and public transport in the Auckland Region. It used the Journey to Work data (JTW) to understand travel patterns within the Auckland region, accounting for much of the movement during peak times. The key finding from the 2018 Census are continued high car share with the highest car use in the Outer Urban area, increased public transport uptake, increasing walking and cycling in Central areas.
+
+
+The JTW data was collected prior to the covid pandemic. According to X since the pandemic the number of commuters have significantly dropped. As the workforce environment has change where working from home has become an option more people have been working from. 
+
+```{r, echo = FALSE, warning = FALSE}
+
+# insert usual residence vs usual workplace plot side by side
+
+# tidying up values
+jtw_driving_akl[jtw_driving_akl == -999] <- 0
+
+jtw_driving_akl$total_driving <-  jtw_driving_akl$Drive_a_company_car_truck_or_van +
+  jtw_driving_akl$Drive_a_private_car_truck_or_van
+
+class(sa2_clipped_geo_akl)
+
+# usual residence
+sa2_usual_res_driving <- sa2_clipped_geo_akl[c("SA22021_V1", "SA22021__1",  "geometry")] %>% 
+  mutate(SA22021_V1 = as.integer(SA22021_V1)) %>% 
+  right_join(jtw_driving_akl[c("SA2_code_usual_residence_address", "total_driving")], by = c("SA22021_V1" = "SA2_code_usual_residence_address")) %>% 
+  group_by(SA22021_V1, SA22021__1) %>% 
+  summarise(`Total Driving` = sum(total_driving))
+
+# usual workplace
+sa2_work_driving <- sa2_clipped_geo_akl[c("SA22021_V1", "SA22021__1",  "geometry")] %>% 
+  mutate(SA22021_V1 = as.integer(SA22021_V1)) %>% 
+  right_join(jtw_driving_akl[c("SA2_code_workplace_address", "total_driving")], by = c("SA22021_V1" = "SA2_code_workplace_address")) %>% 
+  group_by(SA22021_V1, SA22021__1) %>% 
+  summarise(`Total Driving` = sum(total_driving)) 
+ 
+## plotting sa2_usual_res_driving
+p1 <- tm_shape(sa2_usual_res_driving) +
+  tm_polygons(col = "Total Driving", lwd = 0.0001) +
+    tm_layout(panel.labels = c("Auckland, NZ Usual Residence (2018)"), panel.label.size = 0.5)
+
+
+## plotting sa2_usual_res_driving
+p2 <- tm_shape(sa2_work_driving) +
+  tm_polygons(col = "Total Driving", lwd = 0.0001) +
+  tm_layout(panel.labels = c("Auckland, NZ Workplace (2018)"), panel.label.size = 0.5) 
+
+  
+######
+
+
+#plotting usual residence
+#qtm(sa2_usual_res_driving, c("Total Driving")) + 
+ # tm_layout(panel.labels = c("Auckland, NZ Usual Residence (2018)"), 
+  #          panel.label.size = 0.5) 
+
+  
+
+#plotting usual workplace
+#qtm(sa2_work_driving, c("Total Driving")) + 
+ # tm_layout(panel.labels = c("Auckland, NZ Usual Residence (2018)"),
+  #          panel.label.size = 0.5) 
+
+  
+#sum(jtw_driving_akl$total_driving )
+#sum(sa2_usual_res_driving$total_driving)
+#sum(sa2_work_driving$total_driving)
+
+
+
+```
+```{r}
+
+#mapview(sa2_work_driving, zcol = "Total Driving")
+
+```
+
+
+```{r figs1, echo = FALSE, warning = FALSE, fig.width=7,fig.height=6,fig.cap="\\label{fig:figs1}Figure: Usual Residence vs Workpalce ", fig.align = "middle} 
+
+grid.newpage()
+pushViewport(viewport(layout=grid.layout(1,2)))
+print(p1, vp=viewport(layout.pos.col = 1))
+print(p2, vp=viewport(layout.pos.col = 2))
+
+
+
+```
+in Figure \ref{fig:figs1} we see examples of plotting in R.
+
+
+In Figure 1, notice that the usual residence (left plot) plot has the usual 
+residence scattered across Auckland. However, the areas where the commuters work 
+(right plot) the commuters are located in specific Statistical Area 2 areas, 
+predominantly in Penrose, East Tamaki, North Harbour, Auckland Airport and 
+Manukau Central. 
+
+
+
+
+
+
+++++++++++++++
+
+(Notes from Simon) - find literature where this was used - dig out other
+implementations - where did u get it from, how was it collected - what
+is the methodology used to collect the data - what analysis statsnz has
+performed - defined what you want to do with the data - what are the
+high level goals with the data, construct or estimate the routes for all
+those commutes. Estimate the traffic on those routes that are due to
+commute. - estimate this with the crash sites - how dangerous are
+potential routes - going back to the sources or residence location, how
+dangerous are there commutes on particular locations (SA2 polygon usual
+residence)
+
+
 
 ### b. CAS data
 
+```{r}
+
+## CAS data
+cas_data <- readRDS("../data/Crash_Analysis_System_(CAS)_data.rds")
+
+## create a new column called non_injury_crash
+cas_data$non_injury_crash <- ifelse(cas_data$crashSeverity == 'Non-Injury Crash', 1, 0)
+
+table(cas_data$crashSeverity)
+
+## total crashes
+cas_data$total <- rowSums(cas_data[c("fatalCount", "minorInjuryCount", "seriousInjuryCount",  "non_injury_crash")], na.rm = TRUE)
+
+cas_data_proj <- st_as_sf(cas_data, coords = c("X", "Y"), crs = 2193)
+
+cas_data_geo <- st_transform(cas_data_proj, crs = 4326)
+
+
+cas_data_akl_proj <- st_as_sf(cas_data[cas_data$region == 'Auckland Region',], coords = c("X", "Y"), crs = 2193)
+
+cas_data_akl_geo <- st_transform(cas_data_akl_proj, crs = 4326)
+
+##filtering the data to serious and fatal crashes in 2018 around the Auckland Region
+cas_data_akl_2018_geo <-  cas_data_akl_geo[(cas_data_akl_geo$crashYear == 2018 & cas_data_akl_geo$region == "Auckland Region"), ]
+
+#cas_data_akl_2018 <-  cas_data[(cas_data$crashSeverity %in% c("Serious Crash", "Fatal Crash")
+#    & cas_data$crashYear == 2018 & cas_data$region == "Auckland Region"), ]
+
+
+
+
+
+```
+
+
+```{r echo = FALSE}
+#insert crashes over time by type of crashes
+
+
+cas_data_per_year <- cas_data %>% 
+  group_by(crashYear, crashSeverity) %>% 
+  summarise(Total = sum(total))
+
+names(cas_data_per_year)[2] <- "Crash Severity"
+
+```
+
+```{r crash_year_fig, fig.cap = "Figure 1: Total Crashes per Year", fig.align = "middle"}
+
+ggplot(cas_data_per_year, aes(x = crashYear, y = Total)) + 
+  geom_line(aes(color = `Crash Severity`), size = 1) +
+  #labs(title =" Total Crashes per year by Severity", x = "Crash Year", y = "Total Crashes")  +
+  labs(x = "Crash Year", y = "Total Crashes")  +
+  guides(colour = guide_legend(nrow = 1)) +
+   theme(legend.title=element_blank(), legend.position="top", legend.text = element_text(size=8))
+
+
+
+#  theme(legend.text = element_text(size=6))
+
+
+```
+
+
+
+
+```{r}
+#mapview(st_geometry(cas_data_akl_geo[cas_data_akl_geo$crashSeverity != "Non-Injury Crash", ])[1:1000], 
+#        alpha = 0.05,  
+#        alpha.regions = 0.05, 
+#        layer.name = "Injury Crash for all crash years",
+#        cex = 2) #change alpha from 0.1 to 0.05
+```
+
+
+<https://www.nzta.govt.nz/safety/partners/crash-analysis-system/>
+
+<https://www.transport.govt.nz/area-of-interest/safety/road-to-zero/>
+
+<https://www.transport.govt.nz/assets/Uploads/MOT-3833-Road-to-Zero_Annual-Monitoring-Report-2020_FA4_WEB.pdf>
+
++++++++++++++++++++++++++
+
+<https://www.arcgis.com/sharing/rest/content/items/8d684f1841fa4dbea6afaefc8a1ba0fc/info/metadata/metadata.xml?format=default&output=html>
+
+This data comes from the Waka Kotahi Crash Abalysis System (CAS), which
+records all traffic crashes reported to us by the NZ Police. CAS legal
+access with a motor vehicle.
+
+The data updates monthly, in the first week of each month.
+
+Data is currently available from 1 Janauray 2000. the dataset includes
+crash variables that are non-personal data.
+
+Data quality statement:
+
+NZ transport aim to process all fatal crashes within one working day of
+receiving the crash report from NZ Police.
+
+We aim to process all injury crashes (serious and minor injury) within 4
+weeks of receiving the crash report. It may take up to seven months for
+non-injury crashes to be processes in CAS.
+
+Up-to-date information on current number of outstanding crash reports
+Most unprocessed crash reports will be for crashes where there weren't
+any injuries.
+
+Data quality caveats:
+
+-   This data comes from the road traffic crash database Crash Analysis
+    System (CAS) version 2.1.0.
+
+-   As the data is live, data can sometimes change after we received it,
+    that is the data is not static after we publish it.
+
+-   After a crash, NZ Police send us a Traffic Crash Report (TCR). This
+    may not happen immediately. A crash must have happened on a road to
+    be recorded in CAS. The CAS definition of a road is any street,
+    motorway or beach, or place that can access with a motor vehicle.
+
+There is a lag between the time of a crash to CAS having full and
+correct crash records. This is due to the police reporting time frame,
+and data processing.
+
+People don't report all crashes to the NZ Police. The level of reporting
+increases with the severity of the crash.
+
+Crash severity is the severity of the worst injury in the crash.
+
+There may be more than one injusry in a crasg. 2020 and 2021 data is
+incomplete.
+
+Data about all traffic crashes reported to us by the NZ Police
+
+++++++++++++++++++++
+
+Waka Kotahi NZ Transport Agency manages the Crash Analysis System (CAS);
+New Zealand's primary tool for capturing information on where, when and
+how road crashes occur.
+
+The system provides toos to analyse and map crashes, and enables users
+to identify high-risk locations and monitor trends and crash sites. This
+information helps inform transport policy, designa nd prioritise road
+safety improvements and monitor their effectiveness.
+
+CAS is used by a range of organisations all with the broad aim of
+improving road safety. It is an essential tool in supporting the
+Government's road safety stratefy Road to zero. The strategy adopts a
+Vision Zero approach - a New Zealand where no-one is killed or seriously
+injured in road crashes, and where no death or serious injury while
+travelling on our roads is acceptable. CAS enab;es the transport sector
+over the long term, to improve road safety through knowledge, research
+and the measurements of the effects of changes to the network and
+network user behaviour.
+
 ### c. SA2 Polygons
 
+https://catalogue.data.govt.nz/dataset/statistical-area-2-2018-clipped-generalised
+
+This dataset is definitive set of statistical area 2 (SA2) boundaries at 1 January 2018, clipped to the coastline. This clipped version has been create for map creation/cartographic purposes and may not fully represent the official full extent boundaries. SA2 is a new output geography that provides higher aggregations of population data that can be provided at the statistical area 1 (SA1) level. SA2s are defined at meshblock and SA1 levels 
+
+Digital boundary data became freely available on 1 July 2007. This generalised version has been simplified for rapid drawing and is designed for thematic or web mapping purposes. 
+
+For further information see ANZLIC Metadata 2018 Statistical Area 2 attachment below.
+
+Please note that a review of SA2 names was undertaken in early 2018. The review addressed issues with inconsistent naming and applied corrections, resulting in an update to this dataset applied in May 2018. All SA2 codes are unchanged. 
+
+
+
+
 ### d. Auckland Traffic Counter
+
+```{r}
+# insert the radius or distance between the traffic counter and the route
+
+# testing it for different distance
+
+#10meters
+#15 meters
+#20 meters
+
+# the proportions of routes or traffic counters that wasn't detected
+
+```
+
+<https://at.govt.nz/about-us/reports-publications/traffic-counts/>
+
+-   Information about traffic volumes assists with road design and in
+    prioritizing network improvements.
+
+-   Traffic count data is also valuable in assessing road safety risk
+    exposure and helping identify how effective past improvements have
+    been.
+
+The Auckland Transport traffic flow counting programme is carried out
+based on road hierarchy and need.
+
+While all due care has been taken in the prepration and provision of
+thsi service, Auckland Transport does not give any warranty that the
+information contained is accurate and accept
 
 ## 4.3 Libraries Used/Packages
 
 ### a. ghroute
 
-### b. sf 
+https://github.com/s-u/ghroute
 
-### c.autocorrelation
+GHRoutes is a class of objects representing results from the GraphHopper routing when output="gh" is used.
+
+I behaves like a non-mutable list such that usual operations such as subsetting, element extraction, iteration and length() work as expected. However, the object should be consiered non-mutable, i.e., it is not possible to assign new values into an existing object. Although subsetting is allowed, concatenation is not.
+
+The object itself contains Java references which enables low-level access to the underlying results using tha GraphHopper Java API.
+
+It is the only result type which supports representation of alternative routes. If alt=TRUE is used then each (virtual) element contains a list of result paths of which the first one is considerend the best according to GraphHopper.
+
+Note that this API is considered experimental and is subject to change.
+
+
+
+### b. sf
+
+### c. autocorrelation
+
+### d. mapview
+
+### e. leaflet
+
+## 4.4 Dealing with outliers
+
+-   discuss outliers?
 
 # 5 Results
 
-## 5.1 Usual Residence Plot
+-   the results of the experiment from simulation of routes
 
-## 5.2 Usual Work Plot
+## 5.1 Evaluation of Route Simulation by using AT traffic counter
 
-## 5.3 
+## 5.2 Routes
+
+## 5.3 Distance Travelled
+
+## 5.4 Exposure
+
+total distance travelled per SA2
+
+## 5.5 Risk
+
+Number of crashes / total distance travelled per SA2
 
 # 6 Conclusion
 
-The report draws convincing conclusions that are clearly related to the researcg problem and supported b teh research. 
+The report draws convincing conclusions that are clearly related to the
+research problem and supported b teh research.
 
 The report points out relevant and interesting future work.
 
@@ -173,3 +659,129 @@ The report points out relevant and interesting future work.
 # References
 
 # Appendix
+
+# Notes from Simon, 13 May 2022
+
+## DATA
+
+-   find literature where this was used
+-   dig out other implementations
+-   where did u get it from, how was it collected
+-   what is the methodology used to collect the data
+-   what analysis statsnz has performed
+-   defined what you want to do with the data
+-   what are the high level goals with the data, construct or estimate
+    the routes for all those commutes. Estimate the traffic on those
+    routes that are due to commute.
+-   estimate this with the crash sites
+-   how dangerous are potential routes
+-   going back to the sources or residence location, how dangerous are
+    there commutes on particular locations (SA2 polygon usual residence)
+
+## WHAT
+
+-   find literature where this was used
+
+-   dig out other implementations
+
+-   where did u get it from, how was it collected
+
+-   what is the methodology used to collect the data
+
+-   what analysis statsnz has performed
+
+-   defined what you want to do with the data
+
+-   what are the high level goals with the data, construct or estimate
+    the routes for all those commutes. Estimate the traffic on those
+    routes that are due to commute.
+
+-   estimate this with the crash sites
+
+-   how dangerous are potential routes
+
+-   going back to the sources or residence location, how dangerous are
+    there commutes on particular locations (SA2 polygon usual residence)
+
+-   usual residence vs usual work
+
+-   crashes on the main highway (birds eye view)
+
+    -   play around with alpha/transperency.size
+
+-   point out specific junction of roads with high density of traffic
+    and neighbhouring roads to junction with high dense crashes
+
+## HOW (METHODOLOGY) -show results don't show the code
+
+-   details on the data, how are we going to use the data
+
+-   project the data and run a routing software
+
+-   go back to your notes with what we've have happened
+
+-   result of routing software to get traffic estimates due to
+    estimates, validating the AT traffic count. How far that validation
+    go?
+
+-   there are limitation with Auckland Transport counter, state
+    limitations on teh route and AT counter
+
+-   Overcounting the spatial point on the overpass hitting both routes,
+    the sensor (HIGHLIGTHING the traffic counter and the routes). Even
+    though issues are good estimates for simulating routes
+
+-   routes vs crash points comparison (how risky the routes), cas points
+    vs distance travelled. plot of distance versus (can add the linear
+    model here) plot the residuals
+
+-   computing the normalised risk per SA2 (spatial distribution of
+    riskiness)
+
+-   no need to discuss with the outlier if u can't explain
+
+-   
+
+Talk about the autocorrelation - spatial areas
+
+## R Package Discussion
+
+-   talk about the function created
+-   give the code and explanation
+-   method used
+
+Limitations - censoring of the data in MB. Use this in MB - issue with
+SA2 centroids and ends, the solution is samplinga nd computational
+feasible and go down to MB and used the sampling for distribution.
+
+-   fix the route, if we push a point it will pick a different route
+    (TALK ABOUT THIS IN THE FIRST SECTION). We have to estimate the
+    route and we get the route.
+
+-   we could try higher or more routes and future direction. we need to
+    improve it.
+
+-   These are estimates and can be addressed in the future. We are not
+    changing the weights.
+
+-   there is a big effect of the traffic counter
+
+-   number of people in the car.
+
++++++++++++++++ - draw the spatial deprivation index - compare distance
+vs time travelled (account for this SA2 source) - Simon hypothesis there
+shouldn't be any significant difference
+
+
+# Adding Figure Captions
+
+```{r figs, echo=FALSE, fig.width=7,fig.height=6,fig.cap="\\label{fig:figs}plotting example"}
+par(mfrow=c(2,2))
+plot(1:10, col=2)
+plot(density(runif(100, 0.0, 1.0)))
+plot(runif(100, 0.0, 1.0),type="l")
+
+```
+
+in Figure \ref{fig:figs} we see examples of plotting in R.
+
