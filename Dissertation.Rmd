@@ -98,7 +98,7 @@ for commuters that are travelling from their usual residence to work
 
 -   Important concepts and contributions of related work are explained
 
--   Related work is discussed in relation to teh research problem and
+-   Related work is discussed in relation to the research problem and
     proposed solution
 
 -   Gaps in the knowledge about the research problem are identified to
@@ -133,52 +133,8 @@ Zealand's road safety measure compared to other countries.
 
 ## 2.7 Trafficalmr
 
-## Summary
+## 2.8 Summary
 
-# 3 Methodology and Data Analysis
-
--   The methodology used to address the research problem is clearly
-    specified so that an independent research could replicate the
-    results.
-
--   All important concepts used in research are clearly explained
-
--   Statements and claims are appropriately supported with results or
-    evidence, e.g. by citing related work.
-
-Assumptions and limitations of the research of the research are stated
-and their implications discussed.
-
-The research outcomes are critically evaluated (reporting strengths and
-weaknesses)
-
-## 3.1 Assumptions
-
--   Assuming that start and end of the journey of a commuter using
-    driving as a method for driving is the centroid of SA2
-
--   Due to data sensitivity, stats NZ does not provide actual start and
-    end coordinates of each travel
-
--   We assumed that the router provides the best route from source to
-    destination
-
-## 3.2 Overview
-
-## 3.3 Limitations
-
--   The most recent latest journey to work data is 2018. Noting that due
-    to COVID and changes over time, journey to work have changed.
-
-## 3.4 Simulating Routes
-
-## 3.5 Getting the Distance Travelled
-
-## 3.6 Route Riskiness
-
-## 3.7
-
-## 3.7 Summary
 
 # 4 Experimental Design
 
@@ -266,7 +222,7 @@ usual residence and workplace address\* by main means of travel to work.
     information, their responses are coded to 'not further defined'. The
     2018 Census commuter view datasets excludes these 'not further
     defined' areas, as such the sume of the counts for each region in
-    this dataset may not be equal to teh total employed census usually
+    this dataset may not be equal to the total employed census usually
     resident population count aged 15 years and over for that region.
 
 The data uses fixed random rounding to protect confidentiality. Counts
@@ -353,7 +309,7 @@ p2 <- tm_shape(sa2_work_driving) +
 ```
 
 
-```{r figs1, echo = FALSE, warning = FALSE, fig.width=7,fig.height=6,fig.cap="\\label{fig:figs1}Figure: Usual Residence vs Workpalce ", fig.align = "middle} 
+```{r figs1, echo = FALSE, warning = FALSE, fig.align = "middle", fig.width=7,fig.height=6,fig.cap="\\label{fig:figs1}Figure: Usual Residence vs Workpalce "} 
 
 grid.newpage()
 pushViewport(viewport(layout=grid.layout(1,2)))
@@ -612,18 +568,251 @@ It is the only result type which supports representation of alternative routes. 
 Note that this API is considered experimental and is subject to change.
 
 
-
 ### b. sf
 
-### c. autocorrelation
+A surge in development tine (and interest) in 'R-spatial' has followed the award of a grant by the R consortium for the development of support for Simple Features, an open-source standard and model to store and access vector geometries.This result in the sf package (section 2.2.1).
+Multiple places reflect the immense interest in sf. This is especially true for the R-sig-Geo Archives, a long-standing open access email list containiing much R-spatial wisdom accumulated over the years. 
+
+
+Simple features is an open standard developed and endorsed by the Open Geospatial Consortium (OGC), a not-for-profit organisation whose activities we will revisit in a later chapter in section 7.5. 
+
+Simple features is a hierarchical data model that represents a wide range of geometry types. Of 17 geometry types supported by the specification, only 7 are used in the vast majority of geographic research (see Fig 2.2); these core geometry types are fully supported by the R package sf (Pebesma, 2018)
+
+sf can represent all common vector geometry types (raster data classer are not supported by sf): points, lines, polygons and their respective 'multi' versions (which group together features of the same type into a single feature).
+
+sf also supports geometry collections, whcih can contain multiple geometry types in a single object. 
+
+sf largely supersedes the sp ecosystem, which comprises sp (Pebesma abd Bivand), rgdal for data read/write (Bivand et al., 2018)
+and rgeos for spatial operations (Bivand and Rundel, 2018).
+The package is well documented, as can be seen on its website and in 6 vignettes.
+
+**The advantages of using sf**
+
+Simple features is a widely supported data model that underlies data structures in many GIS applications including QGIS and PostGIS. 
+A major advantage of thhis is that using the data model ensures your work is cross-transferable to other set-ups, for example importing from and exporting to spatial databases. 
+
+A more specific question from an R perspective is "Why use the sf package when sp is already tried and tested"?
+There are many reasons (linked to the advantages )
+
+- Fast reading and writing of data
+- Enhanced plotting performance
+- sf objects can be treated as data frames in most operations
+- sf functions can be combined using %>%  operator and works well with the tidyverse collection of R packages
+-sf function names are relatively consistent and intuitive (all begin with st_)
+
+Due to such advantages, some spatial packages (including tmap, mapview and tidycensus) have added support for sf. However, it will take many years for most packages to transition and some will never switch. Fortunately, these can still be used in a workflow based on sf objects, by converting them to the Spatial class used in sp.
+
+Lovelace, R., Nowosad, J., & Muenchow, J. (2019). Geocomputation with R. Chapman and Hall/CRC.
+
+
+### c. autocorrelation/spdep
+
+Using spdep package was explored for spatial autocorrelation functions and spatial error models fitted with functions from the sphet (Piras 2021) and spatialreg (Bivand and Piras 2021) packages. 
+
+In spdep (Vivand 2022b), use is made of planar spatial indexing to find candidate neighbors for objects in projected coordinate reference system, and the neighborhood status (none, rook or queen) is then checked using a planar snap distance.
+
+If the objects are in unprojected coordinate reference syste,s. as is the case here, the candidate neighbors are found using spherical spatial indexing in the s2 package.
+
+There is a minor cost to the use of spherical rathern than planar topological predicates but only roughly a doubling of processing time. 
+R spatial packages are choosing to prefer spherical rather than planar representations for geograpgical coordinate reference systems because straight line segments between two points are only straight in planer settings, not in spherical pretending to be planar, something we have known at least since Al-Khwarizmi. 
+
+
+Bivand, R. (2022). R Packages for Analyzing Spatial Data: A Comparative Case Study with Areal Data. Geographical Analysis.
+
+
+Bivand, R. S. (2022b). spdep: Spatial Dependence: Weighting Schemes, Statistics. R Package Version 1.2-1.
+
+
+
+## VISUALISATION
+
+A satisfying and important aspect of geographic research is communication the results. 
+
+Map making - the art of cartography - is an ancient skill that involves communications, intuition, and an element of creativity.
+
+Static mapping is straighforward with plot(). 
+
+It is possible to create advanced maps using base R methods (Murrel, 2016), but this chapter focuses on dedicated map-making packages. 
+
+A carefully crafter map is vital for effectively communicating the results of your work (Brewer, 2015).
+
+Amateur-looking maps can undermine your audience's ability to understand important information and weaken the presentation of a professional data investigation.
+
+Maps have neen used for several thousand years for a wide variety purposes. Historic examples include maps of buildings and land ownership in the Old Babylonian dysnasty more than 3000 years ago and ptolemy's world map in his masterpiece geography nearly 2000 years ago (talber, 2014)
+
+Map are often the best way to present finding of geocomputational research in a way that is accessible. Map making is therefore a critical part of geocomputation and its emphasis not only describing, but also changing the world. 
+
+Lovelace, R., Nowosad, J., & Muenchow, J. (2019). Geocomputation with R. Chapman and Hall/CRC.
 
 ### d. mapview
 
+Mapview is the quickest way to create interactive maps.
+It uses 'one liner' is a reliable way to interactively explore a wide range of geographic data formats:
+
+mapview has a concise syntax yet is powerful. 
+By default, it provides some standard GIS functionality such as mouse position information, attribute queries (via pop-ups), scale bar and zoom-to-layer buttons. It offers advanced controls including the abilitty to 'burst; datasets into multiple layers and the addition of multiple layers with '+' followed by the name of a geographic object. 
+
+Additionally, it ptovides automatic coloring attributes (via argument zcol). In essence, it can be considered a data-driven leaflet API . Given that mapview always exotect a spatial object (sf, Spatial*, Raster*) as its argument, it works will at the end of piped expressions. 
+
+One important thing to keep in mind is that  mapview layers are added via the + operator (similar to ggplot2 or tmap).
+This is a frequent gotcha in piped workflows where the main binding operator is %>%.
+
+For further information on mapview, see the package's websiter-spatial.github.io/mapview/11.
+
+
+
+Lovelace, R., Nowosad, J., & Muenchow, J. (2019). Geocomputation with R. Chapman and Hall/CRC.
+
 ### e. leaflet
+
+leaflet is the most mature and widely used interactive mapping package in R. 
+leaflet provides a relatively low-level interface to the Leaflet  javaScript library and many of its arguments can be understood by reading the documentation of the original JavaScript library.
+
+leaflet maps are created with leaflet(), the result of which is a leaflet map obkect can be piped to other leaflet functions. This allows multiple map layers and control settings to be added interactively, as demonstrated in the code below which egenrates. 
+
+The release of the leaflet package in 2015 revolutionized interactive web map creation from within R and a number of packages have built on these foundations adding new features (e.g. leaflet.extras) and making the creation of web maps as simple as creating static maps (e.g. mapview and tmap). This 
+
+Lovelace, R., Nowosad, J., & Muenchow, J. (2019). Geocomputation with R. Chapman and Hall/CRC.
+
+
+### f. tmap
+
+Static maprs are the most common type of visual output from geocomputation. 
+
+Fixed images for printed outputs, common formats for static maps include .png and .pdf for raster and vector outputs, respectively. 
+
+Why tmp?
+
+- it is a powerful and flexible map-making package with sensible defaults.
+- it has a concise syntax that allows for the creation of attractive maps with minimal code, which will be familiar to ggplot2 users.
+
+Furthermore, tmap has a unique capability to generate static and interactive maps using the same code via tmap_mode(). It accepts a wider range of spatial classes (including raster objects) than alternatives such as ggplot2, as documented in vignetteds tmap-getstarted and tmap-changes-v2 and an academic paper on the subject, 
+
+Tmap is based on the idea of a grammar of graphics (Wilkinson adn Wills, 2005). This involves a separation between the input data and the aesthetics (how data are visualised): each input dataset can be 'mapped' in a range of different ways including location on the map (defined by data's geometry), color and other variables.
+
+The basic building block is tm_shape() (which defines input data, raster and vector objects), followed bu one ore more layer elements such as tm_fill() and tm_dots(). 
+
+
+Lovelace, R., Nowosad, J., & Muenchow, J. (2019). Geocomputation with R. Chapman and Hall/CRC.
 
 ## 4.4 Dealing with outliers
 
 -   discuss outliers?
+
+# 3 Methodology and Data Analysis (talk about the package)
+
+-   The methodology used to address the research problem is clearly
+    specified so that an independent research could replicate the
+    results.
+
+-   All important concepts used in research are clearly explained
+
+-   Statements and claims are appropriately supported with results or
+    evidence, e.g. by citing related work.
+
+Assumptions and limitations of the research of the research are stated
+and their implications discussed.
+
+The research outcomes are critically evaluated (reporting strengths and
+weaknesses)
+
+## 3.1 Assumptions
+
+-   Assuming that start and end of the journey of a commuter using
+    driving as a method for driving is the centroid of SA2
+
+-   Due to data sensitivity, stats NZ does not provide actual start and
+    end coordinates of each travel
+
+-   We assumed that the router provides the best route from source to
+    destination
+
+## 3.2 Overview
+
+This project is inspired from the saferActive research so it is applied
+in a New Zealand context (robin lovelace).
+We developed a methodology to estimate the casualty rate per billion km for 
+walking and cycling.
+
+Casualty data is available in the R package, broken down into fatal, serious, 
+minor and non-injury crash. We  have filtered these by mode of travel, 
+identifying driving casualties. 
+
+To obtain KSI/bkm for cycle casualties, we have estimated the number of kilometers 
+driven in each statistical area 2 polygon. Using the 2018 census data for journey to work
+and ghroute R package, we were able to create a route for each source and destination pairs.
+
+Each road segment within the route network is assigned to a SA2 polygon based if 
+the route intersects with the said SA2 polygon.  Multiplying the number of each 
+commuters using each segment by the length of the segment this gives the number of km cycled within each SA2.
+
+To obtain sufficient sample size we use CAS data for the years 2016 to 2020. 
+However, our estimated km of driving only covers one-way commuter journeys 
+on a single in 2018. We assumed that the driving commute is during peak period 
+which is usually 7:30 - 9:30 am as suggested by Auckland Transport.
+We then divided the number of casualties by two (to represent one-way journeys) 
+then by five (to repesent a single year) and again 261 days 
+(to represent a single day)
+
+There is a strong positive/negative relationship between distance travelled and KSI/bkm.
+There is a positive relationship between the distance travelled by the commuter 
+and the number of crashes the commuter is exposed. 
+
+## 3.3 Limitations
+
+-   The most recent latest journey to work data is 2018. Noting that due
+    to COVID and changes over time, journey to work have changed.
+    
+
+## 3.4 Simulating Routes
+
+We use the function get_routes from the motroadsafety package developed to simulate the routes of commuters where they drove from their usual residence in Auckland to their workplace. Both source and destination are SA2 centroids. Due to privacy, the data does
+not contain the actual address of the commuters.
+
+The get_route() function uses ghroute capability to find the fastest route between source and destination. the  ghroute intializes a GraphHipper router with a specific profile and data routes. In our case we have used 'car' as the profile as we wanted to simulate commuters driving route network and used the osm fie which is availble in this to provide the network in New Zealand. 
+
+The below figure represents all the routes for all the routes where the commuter resides in Auckland. Notice that there is on commuter who have travelled from Auckland to Wellington, which interestingly  is a long commute.
+
+```{r, warning=FALSE, echo = FALSE}
+
+## getting the total driving commuters and creating a new column
+jtw_driving_akl$total_driving_travellers <- 
+  ifelse(jtw_driving_akl$Drive_a_company_car_truck_or_van >0, jtw_driving_akl$Drive_a_company_car_truck_or_van, 0) +
+  ifelse(jtw_driving_akl$Drive_a_private_car_truck_or_van >0, jtw_driving_akl$Drive_a_private_car_truck_or_van, 0) 
+
+##running get_routes
+jtw_akl_routes <- get_routes(as.matrix(jtw_driving_akl[names(jtw_driving_akl)[21:24]]))
+
+##selecting only important column
+jtw_driving_akl_2 <- jtw_driving_akl[c(1:8, 25)]
+
+## adding routes to data
+jtw_driving_akl_with_routes <- cbind(jtw_akl_routes, jtw_driving_akl_2)
+
+```
+
+
+```{r}
+mapview(jtw_driving_akl_with_routes[1:20, ], layer.name = "Auckland Driving Commutes")
+
+```
+
+
+## 3.5 Getting the Distance Travelled
+
+Exposure is defined as the distance travelled by the commuter. It will vary depending on the type of commute.
+
+The distance travelled will enable us to calculate the exposure of 
+
+
+
+## 3.6 Route Riskiness
+
+
+
+## 3.7 Validating the Routes
+
+## 3.8 Summary
 
 # 5 Results
 
@@ -646,7 +835,7 @@ Number of crashes / total distance travelled per SA2
 # 6 Conclusion
 
 The report draws convincing conclusions that are clearly related to the
-research problem and supported b teh research.
+research problem and supported b the research.
 
 The report points out relevant and interesting future work.
 
@@ -725,7 +914,7 @@ The report points out relevant and interesting future work.
     go?
 
 -   there are limitation with Auckland Transport counter, state
-    limitations on teh route and AT counter
+    limitations on the route and AT counter
 
 -   Overcounting the spatial point on the overpass hitting both routes,
     the sensor (HIGHLIGTHING the traffic counter and the routes). Even
