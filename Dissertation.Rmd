@@ -117,6 +117,7 @@ Zealand's road safety measure compared to other countries.
 
 ## 2.3 Exposure
 
+
 ## 2.4 Risk
 
 -   compare why some methodologies are using time travelled vs distance
@@ -773,6 +774,8 @@ The get_route() function uses ghroute capability to find the fastest route betwe
 
 The below figure represents all the routes for all the routes where the commuter resides in Auckland. Notice that there is on commuter who have travelled from Auckland to Wellington, which interestingly  is a long commute.
 
+
+
 ```{r, warning=FALSE, echo = FALSE}
 
 ## getting the total driving commuters and creating a new column
@@ -793,26 +796,395 @@ jtw_driving_akl_with_routes <- cbind(jtw_akl_routes, jtw_driving_akl_2)
 
 
 ```{r}
-mapview(jtw_driving_akl_with_routes[1:20, ], layer.name = "Auckland Driving Commutes")
+mapview(jtw_driving_akl_with_routes[1:20, ], 
+        layer.name = "Auckland Driving Commutes")
 
 ```
 
 
 ## 3.5 Getting the Distance Travelled
 
-Exposure is defined as the distance travelled by the commuter. It will vary depending on the type of commute.
+Exposure is defined as the distance travelled by the commuter. 
 
-The distance travelled will enable us to calculate the exposure of 
+The get_dist_travel() function enable us to calculate the distance travelled or exposure of a given commuter in a given SA2 polygon. 
+
+This function will be helpful to aggregate the total exposure by SA2 polygon and subsequently allows us to calculate the risk. 
+
+The function mainly uses the sf st_intersection() function to determine the route line segment that is within a polygon, in this case the SA2 polygon. 
 
 
+
+```{r}
+
+# we need this to be projected as 
+
+jtw_driving_akl_with_routes_proj <- st_transform(jtw_driving_akl_with_routes, crs = 2193)
+
+sa2_clipped_proj_akl <- 
+  st_transform(sa2_clipped_geo_akl, crs  = 2193)
+
+dist_travel <- get_dist_travel(sa2_clipped_proj_akl, jtw_driving_akl_with_routes_proj[1:100, ],
+jtw_driving_akl_with_routes_proj[1:100, ]$total_driving)
+
+
+dist_travel[!is.na(dist_travel$total_dist), ]
+
+
+##########################
+
+ 
+```
 
 ## 3.6 Route Riskiness
 
+route_risk() function calculates the total crash a route encounters for a given radius. 
+The default radius is 5 meters but this can be modified. 
+
+As per below example, the commuter traveled from Pukekohe Central to Shortland St and has been exposed to 431 crashes on that route. This is relatively a risky routes and led our hypothesis that longer distance traveled would be exposed to more crash points. 
+
+We have fitted a linear model to describe crash points with distance travelled. The residual plot of a simple linear model showed fairly constant scatter. 
+
+All model assumptions look satisfied once we added the quadratic term to the linear model.
+
+**(Should we use poisson as we are predicting counts data)***
 
 
-## 3.7 Validating the Routes
 
-## 3.8 Summary
+```{r}
+
+mapview(jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$SA2_name_usual_residence_address == 'Pukekohe Central', ], 
+        layer.name = "Pukekohe Central to Shortland St Route",
+        cex = 6) +
+
+
+mapview(cas_data_akl_2018_geo[st_is_within_distance(cas_data_akl_2018_geo, 
+jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$SA2_name_usual_residence_address == 'Pukekohe Central', ], 
+                      dist = 5,
+                      sparse = FALSE), ], 
+col.regions = 'red', 
+alpha = 0.1,
+alpha.regions = 0.3,
+cex = 2, 
+layer.name = "2018 Crash Points")
+
+# 431 crashes
+nrow(cas_data_akl_2018_geo[st_is_within_distance(cas_data_akl_2018_geo, 
+jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$SA2_name_usual_residence_address == 'Pukekohe Central', ], 
+                      dist = 5,
+                      sparse = FALSE), ])
+
+```
+
+
+```{r}
+
+route_risk <- function(routes, crash_lat, crash_lng, crash_weight = NULL, radius = 5, crs = 2193 ){
+  
+  
+route_riskiness_d <- route_risk(jtw_driving_akl_with_routes, 
+           crash_lat = st_coordinates(cas_data_akl_2018_geo)[, 'Y'],
+           crash_lng = st_coordinates(cas_data_akl_2018_geo)[, 'X'])
+
+
+```
+
+## 3.7 Exposure
+
+```{r}
+
+
+
+```
+
+
+## 3.8 Risk
+
+Risk
+
+
+```{r}
+
+```
+
+
+
+## 3.9 Validating the Routes
+
+We wanted to validate the routes we simulated. We have used Auckland Traffic Counter data from Auckland Transport to validate our estimation. 
+
+We used 
+
+```{r}
+
+```
+
+## 3.10 Autocorrelation
+
+https://data.cdrc.ac.uk/system/files/practical9_0.html
+
+Spatial Autocorrelation
+- measures how distance influences a particular variable
+- it quantifies the degree of which objects are similar to nearby objects. 
+
+* Variables are said to have a **positive spatial autocorrelation** when similar values tend to be neared together than dissimilar values
+
+Waldo Tober's first law of geography
+- "Everything is related to everything else, but near things are more related than distant things"
+
+- We would expect most geographic phenomena to exert a spatial autocorrelation of some kind
+
+We can represent spatial autocorrelaton in two ways
+
+1.  global models 
+    - create a single measure which represent the entire data 
+
+2. local models 
+    - lets us explore spatial clustering across space
+
+Running a local spatial autocorrelation
+- need to create a moran plot which looks at each of teh values plotted against their spatially lagged values
+- explores the relationship between the data and their neighbours as a scatter plot
+- The style refers to how the weights are coded. "W" are weights are row standardised (sums over all links to n)
+
+
+**Exploratory Spatial Data Analysis (ESDA)**
+
+https://towardsdatascience.com/what-is-exploratory-spatial-data-analysis-esda-335da79026ee
+
+- correlates a specific variable to a location, taking into account the values of the same variable in the neighbourhood. The methods used for this purpose are called Spatial Autocorrelation
+
+Spatial autocorrelation
+- Describing the presence (or absence) of spatial variations in a given variable.
+- Like, conventional correlation methods, Spatial autocorrelation has positive and negative values
+
+Positive Spatial autocorrelation
+- when areas close to each other have similar values (High-high, or Low-low)
+
+Negative Spatial autocorrelation
+- neighbourhood areas to be different (Low values next to high values).
+
+```{r}
+# using the spatial autocorrelation functions available from the spdep package
+library(spdep)
+
+```
+
+
+#### i. Getting The Neighbhours
+
+##### Queen's Contiguity
+```{r}
+
+##using total 2018 CAS points per SA2 polygon
+## need to use projected
+## jtw_driving_akl_SA2_cas_dep2 - excludes outliers Pukekohe Central and Queen St
+## jtw_driving_akl_SA2_cas_dep - includes outliers
+
+
+
+jtw_driving_akl_SA2_cas_dep_proj <- st_transform(jtw_driving_akl_SA2_cas_dep2[!st_is_empty(jtw_driving_akl_SA2_cas_dep2), ],
+ crs = 2193)
+
+
+##need to transform this to sp 
+jtw_driving_akl_SA2_cas_dep_proj_sp <- as_Spatial(jtw_driving_akl_SA2_cas_dep_proj)
+
+##Finding neighbours
+#- in order for the subsequent model to work, we need to work out what polygons neighbour each other
+
+neighbours <- poly2nb(jtw_driving_akl_SA2_cas_dep_proj_sp)
+neighbours
+
+
+
+```
+
+##### Rook's Contiguity
+
+```{r}
+##plotting the links between neighbours to visualise their distribution across space
+
+plot(jtw_driving_akl_SA2_cas_dep_proj_sp, border = 'lightgrey')
+plot(neighbours, coordinates(jtw_driving_akl_SA2_cas_dep_proj_sp), add = TRUE, col = 'red')
+
+## NOTE: Default contiguity is Queen. 
+## Spatial weights are how we determine the area’s neighborhood. There are different statistical methods that are used for determining spatial weights, and it is beyond this to provide an in-depth explanation of each in this article. One of the most commonly used spatial weights methods is Queen Contiguity Matrix, which we use. 
+
+```
+
+
+```{r}
+## Calculate the Rook's case neighbours
+# the parameter `queen', if TRUE a single shared boundary point meets the contiguity condition, if FALSE, more than one share point is required; not that more than shared boundary point does not necessarily mean a shared boundary
+neighbours2 <- poly2nb(jtw_driving_akl_SA2_cas_dep_proj_sp, queen = FALSE)
+neighbours2
+
+## comapring different types of neighbours
+plot(jtw_driving_akl_SA2_cas_dep_proj_sp, border = 'lightgrey')
+plot(neighbours, coordinates(jtw_driving_akl_SA2_cas_dep_proj_sp), add = TRUE, col = 'blue', lwd = 2)
+plot(neighbours2, coordinates(jtw_driving_akl_SA2_cas_dep_proj_sp), add = TRUE, col = 'red')
+```
+##### Removing the islands
+
+```{r}
+##need to remove the islands as there are no neighbours
+## using the rmapshaper package to remove the islands
+#install.packages("rmapshaper")
+library(rmapshaper)
+
+jtw_driving_akl_SA2_cas_dep_proj_sp_2 <- ms_filter_islands(jtw_driving_akl_SA2_cas_dep_proj_sp, min_area = 12391399903)
+
+
+neighbours3 <- poly2nb(jtw_driving_akl_SA2_cas_dep_proj_sp_2, queen = FALSE)
+neighbours3
+
+plot(jtw_driving_akl_SA2_cas_dep_proj_sp_2, border = 'lightgrey')
+plot(neighbours3, coordinates(jtw_driving_akl_SA2_cas_dep_proj_sp_2), add = TRUE, col = 'blue')
+
+
+
+```
+
+#### ii. Global Autocorrelation
+
+Global spatial autocorrelation
+- focuses on the overall trend in the dataset and tells us if the degree of clustering in the dataset
+
+With the neighbours defined. We can now run a model. First we need to convert the data types of the neighbours object. This file will be used to determine how the neighbours are weighted
+
+```{r}
+# Convert the neighbour data to a listw object
+listw <- nb2listw(neighbours3)
+listw
+
+```
+
+##### Moran’s test
+
+Moran’s test
+- This will create a correlation score between -1 and 1. Much like a correlation coefficient, 1 determines perfect postive spatial autocorrelation (so our data is clustered), 0 identifies the data is randomly distributed and -1 represents negative spatial autocorrelation (so dissimilar values are next to each other).
+
+```{r}
+
+moran.test(jtw_driving_akl_SA2_cas_dep_proj_sp_2$cas_per_SA2_res, listw)
+
+## The Moran I statistic is 0.55, we can therefore determine that there our qualification variable is positively autocorrelated in Auckland. In other words, the data does spatially cluster. We can also consider the p-value as a measure of the statistical significance of the model.
+
+
+```
+
+##### Moran's plot
+
+Both Moran’s I and Moran’s I Scatter plot show positively correlated observations by location in the dataset.
+
+```{r}
+
+
+## Explores the relationship between the data and their neighbours as a scatter plot. The style refers to how the weights are coded. “W” weights are row standardised (sums over all links to n).
+
+## creates a moran plot
+moran <- moran.plot(jtw_driving_akl_SA2_cas_dep_proj_sp_2$cas_per_SA2_res, listw = nb2listw(neighbours3, style = "W"), xlab ="Total Crash points per SA2 (normalise)", ylab = "Spatial Lag")
+
+```
+
+#### iii. Local Spatial Autocorrelation
+- looking into spatial variations in the dataset
+
+Local Spatial Autocorrelation
+- using Local Indicators of Spatial Association (LISA) is used to detect clusters spatially
+
+LISA classifies areas into four groups:
+1. high values near to high values (HH)
+2. Low values with the nearby low values (LL)
+3. Low values with high values in its neighbourhood and vice versa
+
+Useful statistics from the model which are as defined:
+
+Name    |    Description
++-------+-------------------------------------------+
+Ii      | local moran statistic
+E.Ii    | expectation of local moran statistic 
+Var.Ii  | variance of local moran statistic
+Z.Ii    | standard deviate of local moran statistic 
+Pr()    | p-value of local moran statistic
+
+
+
+```{r}
+
+## create a local moran output
+local <- localmoran(jtw_driving_akl_SA2_cas_dep_proj_sp_2$cas_per_SA2_res,listw = nb2listw(neighbours3, style = "W"))
+
+```
+
+
+```{r}
+
+
+## map the local moran statistic (Ii)
+## A positive value for Ii indicates that the unit is surrounded by units with similar values
+
+#bind results to our polygon shapefile
+moran.map <- cbind(jtw_driving_akl_SA2_cas_dep_proj_sp_2, local) ## change the non normalise that people travelled
+
+## map the results
+tm_shape(moran.map) + tm_fill(col = "Ii", style = "quantile",
+                              title = "local moran statistic")
+
+
+#From the map it is possible to observe the variations in autocorrelation across space. We can interpret that there seems to be a geographic pattern to the autocorrelation. However, it is not possible to understand if these are clusters of high or low values.
+
+```
+
+#### iv. map of the P-value to observe variances in significance across
+
+Includes creating a map which labels the features based on the types of relationships they share with their neighbours (i.e. high and high, low and low, insigificant, etc. . . ).
+
+```{r}
+
+### to create LISA cluster map ###
+quadrant <- vector(mode="numeric",length=nrow(local))
+
+# centers the variable of interest around its mean
+m.cas_per_SA2_res <- jtw_driving_akl_SA2_cas_dep_proj_sp_2$cas_per_SA2_res - mean(jtw_driving_akl_SA2_cas_dep_proj_sp_2$cas_per_SA2_res)
+
+# centers the local Moran's around the mean
+m.local <- local[,1] - mean(local[,1])
+
+# significance threshold
+signif <- 0.1
+
+# builds a data quadrant
+quadrant[m.cas_per_SA2_res >0 & m.local>0] <- 4
+quadrant[m.cas_per_SA2_res <0 & m.local<0] <- 1
+quadrant[m.cas_per_SA2_res <0 & m.local>0] <- 2
+quadrant[m.cas_per_SA2_res >0 & m.local<0] <- 3
+quadrant[local[,5]>signif] <- 0
+
+```
+
+
+```{r}
+
+# plot in r
+brks <- c(0,1,2,3,4)
+colors <- c("white","blue",rgb(0,0,1,alpha=0.4),rgb(1,0,0,alpha=0.4),"red")
+plot(jtw_driving_akl_SA2_cas_dep_proj_sp_2,border="lightgray",col=colors[findInterval(quadrant,brks,all.inside=FALSE)])
+box()
+legend("bottomleft",legend=c("insignificant","low-low","low-high","high-low","high-high"),
+       fill=colors,bty="n")
+
+
+
+```
+
+
+## 3.11 Summary
+
+```{r}
+
+```
+
 
 # 5 Results
 
@@ -822,7 +1194,17 @@ The distance travelled will enable us to calculate the exposure of
 
 ## 5.2 Routes
 
+```{r}
+
+```
+
+
 ## 5.3 Distance Travelled
+
+```{r}
+
+```
+
 
 ## 5.4 Exposure
 
