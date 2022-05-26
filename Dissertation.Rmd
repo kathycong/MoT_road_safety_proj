@@ -252,6 +252,17 @@ jtw_driving_akl[jtw_driving_akl == -999] <- 0
 jtw_driving_akl$total_driving <-  jtw_driving_akl$Drive_a_company_car_truck_or_van +
   jtw_driving_akl$Drive_a_private_car_truck_or_van
 
+sum(jtw_driving_akl$total_driving)
+###############
+
+jtw_driving_akl$total_driving_travellers <- 
+  ifelse(jtw_driving_akl$Drive_a_company_car_truck_or_van >0, jtw_driving_akl$Drive_a_company_car_truck_or_van, 0) +
+  ifelse(jtw_driving_akl$Drive_a_private_car_truck_or_van >0, jtw_driving_akl$Drive_a_private_car_truck_or_van, 0) 
+
+ ifelse(jtw_driving_akl$Drive_a_private_car_truck_or_van >0, jtw_driving_akl$Drive_a_private_car_truck_or_van, 0) ==  jtw_driving_akl$Drive_a_private_car_truck_or_van
+ 
+###########
+
 class(sa2_clipped_geo_akl)
 
 # usual residence
@@ -303,9 +314,10 @@ p2 <- tm_shape(sa2_work_driving) +
 
 
 ```
+
 ```{r}
 
-#mapview(sa2_work_driving, zcol = "Total Driving")
+mapview(sa2_work_driving, zcol = "Total Driving")
 
 ```
 
@@ -802,7 +814,7 @@ mapview(jtw_driving_akl_with_routes[1:20, ],
 ```
 
 
-## 3.5 Getting the Distance Travelled
+## 3.5 Getting the Distance Travelled (Exposure)
 
 Exposure is defined as the distance travelled by the commuter. 
 
@@ -835,7 +847,23 @@ dist_travel[!is.na(dist_travel$total_dist), ]
  
 ```
 
-## 3.6 Route Riskiness
+
+## 3.6 Risk
+
+**Risk**
+- Calculated as the number of crashed divided by exposure
+
+`((CAS for 5 years data filtered during peak period / 2 journey)  / 5 years / 261 days)` / `exposure (distance traveled)`
+
+We ta
+
+
+```{r}
+
+```
+
+
+## 3.7 Route Riskiness
 
 route_risk() function calculates the total crash a route encounters for a given radius. 
 The default radius is 5 meters but this can be modified. 
@@ -878,47 +906,143 @@ jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$SA2_name_usual_residence
 
 ```{r}
 
-route_risk <- function(routes, crash_lat, crash_lng, crash_weight = NULL, radius = 5, crs = 2193 ){
-  
-  
-route_riskiness_d <- route_risk(jtw_driving_akl_with_routes, 
-           crash_lat = st_coordinates(cas_data_akl_2018_geo)[, 'Y'],
-           crash_lng = st_coordinates(cas_data_akl_2018_geo)[, 'X'])
 
 
 ```
 
-## 3.7 Exposure
 
 ```{r}
+##we need the data to be projected
+cas_data_akl_2018_proj <- st_transform(cas_data_akl_2018_geo, crs = 2193)
+
+## calculating the riskiness of the route
+route_riskiness_d_proj <- route_risk(jtw_driving_akl_with_routes_proj, 
+                                cas_data_akl_2018_proj)
+
 
 
 
 ```
-
-
-## 3.8 Risk
-
-Risk
 
 
 ```{r}
 
+###getting the total crash points a source SA2 has encountered during its journey
+
+## getting the total number of travelers for a given route
+##exposed to crash point by multiple total travelers with 
+## total crash points within the 5 meter route radius
+
+route_riskiness_d_proj$total_traveler_times_cas <- 
+  route_riskiness_d_proj$crash_within_5m * route_riskiness_d_proj$total_driving
+
+
+
+jtw_driving_akl_SA2_cas_dep <-  st_drop_geometry(route_riskiness_d_proj[!st_is_empty(route_riskiness_d_proj), ]) %>%
+  group_by(SA2_code_usual_residence_address, SA2_name_usual_residence_address) %>% 
+  summarise(total_cas_SA2_source = sum(crash_within_5m), 
+            total_driving_travellers = sum(total_driving),
+            total_traveler_times_cas = sum(total_traveler_times_cas)) %>% 
+  left_join(sa2_clipped_geo_akl %>% mutate(SA22021_V1 = as.integer(SA22021_V1)),    ##joining SA2 polygons
+            by = c("SA2_code_usual_residence_address" = "SA22021_V1"))
+
+jtw_driving_akl_SA2_cas_dep <- st_sf(jtw_driving_akl_SA2_cas_dep[!names(jtw_driving_akl_SA2_cas_dep) %in% c("geometry")], geometry = jtw_driving_akl_SA2_cas_dep$geometry)
+
+mapview(jtw_driving_akl_SA2_cas_dep, zcol = "total_traveler_times_cas")
+
+
+summary(route_riskiness_d_proj$total_traveler_times_cas )
+
+route_riskiness_d_proj[route_riskiness_d_proj$total_traveler_times_cas == 909432, ]
+
+
+## note there are 261 working days in a year
+## assuming that the crash occured during a working day
+jtw_driving_akl_SA2_cas_dep$cas_per_SA2_res <- jtw_driving_akl_SA2_cas_dep$total_traveler_times_cas / 
+  jtw_driving_akl_SA2_cas_dep$total_driving_travellers
 ```
 
 
+## 3.8 Validating the Routes
 
-## 3.9 Validating the Routes
+We wanted to quantify how good our simulation is. 
+We have used Auckland Traffic Counter data from Auckland Transport to quantify 
+the performance of our route estimation noting that we only have SA2 centroids as opposed
+to an exact address. 
 
-We wanted to validate the routes we simulated. We have used Auckland Traffic Counter data from Auckland Transport to validate our estimation. 
+The method we use is for each traffic counter to compare the total total vehicles counted by the Auckland Transport during AM traffic versus the the total driving commuters where the route is within a given distance of the router. From here we need to decide the optimal radius between the Auckland traffic counter and the commuters source and destination route. We compare 10 meters vs 15 meters vs 20 meters we have found that 20 meters radius is the optimal number and taken into consideration teh typical road width (which varies on the type of road).
+The typical road width according to Auckland transport is.
 
-We used 
+With 20 meters as the radius to measure to measure the distance between the commuter route and traffic counter, we have identified that approximately 30% (651 of 2331 traffic counter) the traffic counter is not within 20 meters radius from a given route. This is attributed to the fact that our source and destination are SA2 polygons, which means that we might have not all possible routes in Auckland.
+
 
 ```{r}
 
+at_traffic_count <- 
+read_xlsx("../data/at-website-traffic-counts-2012-2021.xlsx", 
+           sheet = "July 2012 to May 2021",
+          skip = 1)
+
+at_traffic_count$year = format(at_traffic_count$`Count Start Date`, format = "%Y")
+
+## we are only interested traffic at 2018
+at_traffic_count_2018 <- at_traffic_count[at_traffic_count$year == 2018 &
+                                          !(is.na(at_traffic_count$`Description (location of traffic count)`)), ]
+
+## we need the coordinates, thus extracting easting and northing from directions column
+at_traffic_count_2018$Easting <- substr(at_traffic_count_2018$`Description (location of traffic count)`, 2, 8)
+
+at_traffic_count_2018$Northing <- substr(at_traffic_count_2018$`Description (location of traffic count)`, 12, 18)
+
+## need to set up coordinates, projected
+at_traffic_count_2018_proj <- st_as_sf(at_traffic_count_2018, coords = c("Easting", "Northing"), crs = 2193)
+
+##transform coordinates  
+at_traffic_count_2018_geo <- st_transform(at_traffic_count_2018_proj, crs = 4326)
+
+
 ```
 
-## 3.10 Autocorrelation
+Comparing 10 meters vs 15 meters vs 20 meters radius
+- it seems that 20 meters captures more signal compared to 10m and 15m as indicated below
+
+`20 meters` - green
+`15 meters` - purple
+`10 meters` - yellow
+
+```{r}
+## route 1488
+    leaflet()%>% 
+   addTiles() %>% 
+    addPolylines(data = st_geometry(st_transform(jtw_driving_akl_with_routes_proj[st_is_within_distance(jtw_driving_akl_with_routes_proj,
+                      at_traffic_count_2018_proj[1488, ],
+                      dist = 20, 
+                      sparse = FALSE) &
+  !st_is_empty(jtw_driving_akl_with_routes_proj), ], crs = 4326))) %>% 
+          addCircles( lat = st_coordinates(st_transform(at_traffic_count_2018_proj[1488, ], 
+                                                        crs = 4326))[1, "Y"], 
+                  lng = st_coordinates(st_transform(at_traffic_count_2018_proj[1488, ], 
+                                                    crs = 4326))[1, "X"],
+                  col = 'green', 
+                  radius = 20) %>% 
+                addCircles( lat = st_coordinates(st_transform(at_traffic_count_2018_proj[1488, ], 
+                                                        crs = 4326))[1, "Y"], 
+                  lng = st_coordinates(st_transform(at_traffic_count_2018_proj[1488, ], 
+                                                    crs = 4326))[1, "X"],
+                  col = 'purple', 
+                  radius = 15) %>% 
+                addCircles( lat = st_coordinates(st_transform(at_traffic_count_2018_proj[1488, ], 
+                                                        crs = 4326))[1, "Y"], 
+                  lng = st_coordinates(st_transform(at_traffic_count_2018_proj[1488, ], 
+                                                    crs = 4326))[1, "X"],
+                  col = 'yellow', 
+                  radius = 10) %>% 
+    addCircles(data = st_geometry(at_traffic_count_2018_geo[1488, ]), color = "red")
+    
+```
+
+
+## 3.9 Autocorrelation
 
 https://data.cdrc.ac.uk/system/files/practical9_0.html
 
@@ -1179,7 +1303,7 @@ legend("bottomleft",legend=c("insignificant","low-low","low-high","high-low","hi
 ```
 
 
-## 3.11 Summary
+## 3.10 Summary
 
 ```{r}
 
@@ -1192,6 +1316,8 @@ legend("bottomleft",legend=c("insignificant","low-low","low-high","high-low","hi
 
 ## 5.1 Evaluation of Route Simulation by using AT traffic counter
 
+
+
 ## 5.2 Routes
 
 ```{r}
@@ -1200,6 +1326,16 @@ legend("bottomleft",legend=c("insignificant","low-low","low-high","high-low","hi
 
 
 ## 5.3 Distance Travelled
+
+Distribution of distance travelled
+We can see that  
+
+```{r}
+
+```
+
+
+Total distance travelled per SA2
 
 ```{r}
 
