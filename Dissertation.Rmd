@@ -3,39 +3,31 @@ title: "Road Safety Dissertation"
 author: "Kathlyn Ycong"
 date: '2022-05-12'
 output: word_document
-
-
 ---
 
 # Abstract
 
-Abstract should contain a brief summary of the aim, methodologies, finds
-and conclusions of the disseration. That abstract should normally be
-fewer than 350 words.
+Abstract should contain a brief summary of the aim, methodologies, finds and conclusions of the disseration. That abstract should normally be fewer than 350 words.
 
 # Acknowledgement
 
 # 1 Introduction
 
-The purpose is to describe the general subject area, state the research
-problem of interest, outline the main results of the thesis, and put the
-results in context with wider subject area and its applications.
+The purpose is to describe the general subject area, state the research problem of interest, outline the main results of the thesis, and put the results in context with wider subject area and its applications.
 
-The main body of the text must be divided into a logical scheme which is
-followed consistently throughout the work. It usually starts with an
-introduction chapter and ends with a conclusion.
+The main body of the text must be divided into a logical scheme which is followed consistently throughout the work. It usually starts with an introduction chapter and ends with a conclusion.
 
 ## inspiration of this project
 
-https://saferactive.github.io/trafficalmr/articles/report1.html
+<https://saferactive.github.io/trafficalmr/articles/report1.html>
 
-SaferActive project is the inspiration for this research. The SaferActive project is funded by the United Kingdom (UK) Department for Transport in support of aims to outlined in the cycling and walking investment strategy (CWIS): to double the number of stages cycled compared with the baseline year of 2013, and "reverse the decline in walking)" whilst reducing the casualty rate per km walked and cycled year on year. 
+SaferActive project is the inspiration for this research. The SaferActive project is funded by the United Kingdom (UK) Department for Transport in support of aims to outlined in the cycling and walking investment strategy (CWIS): to double the number of stages cycled compared with the baseline year of 2013, and "reverse the decline in walking)" whilst reducing the casualty rate per km walked and cycled year on year.
 
-The methods of estimating safety in the more commonly used units of killed and seriously injured per billion km (KSI/bkm), and outline progress in collecting, analysing and modelling datasets that will be used in subsequent steps of the project. 
+The methods of estimating safety in the more commonly used units of killed and seriously injured per billion km (KSI/bkm), and outline progress in collecting, analysing and modelling datasets that will be used in subsequent steps of the project.
 
-April 2020 is the inception of the project. They were able to develop a new R package, trafficalmr, to automate the access and analysis of exposure data, casualty data and intervention data. 
+April 2020 is the inception of the project. They were able to develop a new R package, trafficalmr, to automate the access and analysis of exposure data, casualty data and intervention data.
 
-Collected and preprocessed data from a wide range of source to support next steps in the project. 
+Collected and preprocessed data from a wide range of source to support next steps in the project.
 
 Explored various geographic, interactive and static visualisation options, including who-hit-who visualisations using 'upset plots'
 
@@ -43,44 +35,28 @@ Analysed the variability of estimated walking and cycling risk per bkm (section 
 
 Crreated a prototype web app to visualise road safety data as basis for considering next steps.
 
-
 ## 1.1 Motivation
 
 we wanted to create an R Package so that we calcu
 
 ## 1.2 Problem Statement
 
--   The research problem is clearly and concisely **defined** (e.g. as
-    research questions).
+-   The research problem is clearly and concisely **defined** (e.g. as research questions).
 
--   The research is clearly **motivated**, i.e. its importance is
-    explained
+-   The research is clearly **motivated**, i.e. its importance is explained
 
 -   The **scope** of the research done in the project is clearly stated.
 
 ## 1.3 Research Objectives
 
-Overall Aim/Goal of the Project - MoT are looking to adapt trafficalmr -
-Adding value to road safety policies that can help the lives of New
-Zealanders - Better safety outcomes for active transport modes - this
-project will set the data foundations for adapting trafficalmr to the
-New Zealand context and enable policy/traffic calming intervention
-analyses. - The main part of the work will involve data processing. But
-the variety of the data will keep the work interesting - the work
-involves geospatial datasets (raw and derived), APIs (Cyclestreets,
-OpenStreetMap) and census datasets - The policy analysis will use the
-developed data foundations to estimate the casualty rate per billion
-kilometres for walking and cycling to work commutes - Data visualisation
-and data communication will be an ideal closing point for this project.
+Overall Aim/Goal of the Project - MoT are looking to adapt trafficalmr - Adding value to road safety policies that can help the lives of New Zealanders - Better safety outcomes for active transport modes - this project will set the data foundations for adapting trafficalmr to the New Zealand context and enable policy/traffic calming intervention analyses. - The main part of the work will involve data processing. But the variety of the data will keep the work interesting - the work involves geospatial datasets (raw and derived), APIs (Cyclestreets, OpenStreetMap) and census datasets - The policy analysis will use the developed data foundations to estimate the casualty rate per billion kilometres for walking and cycling to work commutes - Data visualisation and data communication will be an ideal closing point for this project.
 
-trafficalmr open source project (in R) - an initiative from the UK that
-seeks to automate and analyse: risk exposure, traffic casualty and
-intervention indicators to better understand road safety outcomes in the
-UK.
+trafficalmr open source project (in R) - an initiative from the UK that seeks to automate and analyse: risk exposure, traffic casualty and intervention indicators to better understand road safety outcomes in the UK.
 
 ## 1.4 Contributions
 
 ## 1.5 Overview of Approach
+
 
 ## 1.6 Scope & Structure
 
@@ -90,26 +66,22 @@ for commuters that are travelling from their usual residence to work
 
 # 2 Related Work
 
--   An appropriate number and range of related works is cited ( \>= 20
-    for dissertation)
+-   An appropriate number and range of related works is cited ( \>= 20 for dissertation)
 
--   Related work is appropriately organised (e.g. using subsections or
-    tables)
+-   Related work is appropriately organised (e.g. using subsections or tables)
 
 -   Important concepts and contributions of related work are explained
 
--   Related work is discussed in relation to the research problem and
-    proposed solution
+-   Related work is discussed in relation to the research problem and proposed solution
 
--   Gaps in the knowledge about the research problem are identified to
-    explain the novelty of the research in the report.
+-   Gaps in the knowledge about the research problem are identified to explain the novelty of the research in the report.
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Wanted to set the scene on the relevance of road safety, how New
-Zealand's road safety measure compared to other countries.
+Wanted to set the scene on the relevance of road safety, how New Zealand's road safety measure compared to other countries.
 
 ## 2.1 Road Safety
+
 
 ## 2.2 Policies on Road Safety
 
@@ -117,11 +89,9 @@ Zealand's road safety measure compared to other countries.
 
 ## 2.3 Exposure
 
-
 ## 2.4 Risk
 
--   compare why some methodologies are using time travelled vs distance
-    travelled. Why are we using distance travelled in this project
+-   compare why some methodologies are using time travelled vs distance travelled. Why are we using distance travelled in this project
 
 ## 2.5 Geocomputation/Spatial Analysis
 
@@ -136,7 +106,6 @@ Zealand's road safety measure compared to other countries.
 
 ## 2.8 Summary
 
-
 # 4 Experimental Design
 
 ## 4.1 Implementation
@@ -147,8 +116,7 @@ Zealand's road safety measure compared to other countries.
 
 -   Validating the the routes
 
-## 4.3 Datasets
-
+## 4.3 Datasets and Processing the Data
 
 ```{r}
 # libraries required
@@ -166,23 +134,22 @@ library(grid) # display side by side plot
 
 ```
 
-
 ```{r}
 
 # Datasets from the package
 
-load("~/Documents/University of Auckland/COMPSCI 791 Research Project/mot_road_safety_project/motroadsafetytest/data/jtw_driving_akl.rda")
-
-load("~/Documents/University of Auckland/COMPSCI 791 Research Project/mot_road_safety_project/motroadsafetytest/data/sa2_clipped_geo_akl.rda")
-
+readRDS("data/jtw_driving_akl.rds")
+readRDS("data/sa2_clipped_geo_akl.rds")
 
 ```
 
 ```{r}
 
 ## SA2 to MB mapping provided by StatsNZ
-key <- read_xlsx("../data/Stats NZ Geographic Key.xlsx", 
-           sheet = "Geographic Key")
+#key <- read_xlsx("../data/Stats NZ Geographic Key.xlsx", 
+ #          sheet = "Geographic Key")
+
+#saveRDS(key, "data/key.rds")
 
 ## need to change data type of MBs so we can join it with df
 key$MB2018_V1_00 <- as.character(key$MB2018_V1_00)
@@ -199,48 +166,29 @@ key_2 <- key[, c(3,8)] %>%
 
 ```
 
-
-
-
 ### a. Journey to work data
 
 <https://datafinder.stats.govt.nz/table/104720-2018-census-main-means-of-travel-to-work-by-statistical-area-2/>
 
-The 2018 Census commuter view dataset contains the employed census
-usually resident population count aged 15 years and over by Statistical
-area 2 for the main means of travel to work variable from the 2018
-census. The geography corresponds to 2018 boundaries.
+The 2018 Census commuter view dataset contains the employed census usually resident population count aged 15 years and over by Statistical area 2 for the main means of travel to work variable from the 2018 census. The geography corresponds to 2018 boundaries.
 
-This dataset is the base data for the 'there and back again: **our daily
-commute competition**. - look this up
+This dataset is the base data for the 'there and back again: **our daily commute competition**. - look this up
 
-This 2018 Census commuter view dataset is displayed by Statistical area2
-geography and contains from-to (journey) information on an individual's
-usual residence and workplace address\* by main means of travel to work.
+This 2018 Census commuter view dataset is displayed by Statistical area2 geography and contains from-to (journey) information on an individual's usual residence and workplace address\* by main means of travel to work.
 
--   Workplace address is coded from information supplied by respondents
-    about their workplaces. Where respondents do not supply sufficient
-    information, their responses are coded to 'not further defined'. The
-    2018 Census commuter view datasets excludes these 'not further
-    defined' areas, as such the sume of the counts for each region in
-    this dataset may not be equal to the total employed census usually
-    resident population count aged 15 years and over for that region.
+-   Workplace address is coded from information supplied by respondents about their workplaces. Where respondents do not supply sufficient information, their responses are coded to 'not further defined'. The 2018 Census commuter view datasets excludes these 'not further defined' areas, as such the sume of the counts for each region in this dataset may not be equal to the total employed census usually resident population count aged 15 years and over for that region.
 
-The data uses fixed random rounding to protect confidentiality. Counts
-of less than 6 are suppressed according to 2018 confidentiality rules.
-Values of -999 indicate supressed data.
+The data uses fixed random rounding to protect confidentiality. Counts of less than 6 are suppressed according to 2018 confidentiality rules. Values of -999 indicate supressed data.
 
-Data quality ratings for 2018 Census variables, summarising the quality
-rating and priority levels for 2018 Census variables, are available.
+Data quality ratings for 2018 Census variables, summarising the quality rating and priority levels for 2018 Census variables, are available.
 
 using JTW data
 
-https://at.govt.nz/about-us/reports-publications/2018-census/
+<https://at.govt.nz/about-us/reports-publications/2018-census/>
 
 Auckland Transport is the organisation responsible for all transport services (excluding state highways) from roads and footpaths, to cycling parking and public transport in the Auckland Region. It used the Journey to Work data (JTW) to understand travel patterns within the Auckland region, accounting for much of the movement during peak times. The key finding from the 2018 Census are continued high car share with the highest car use in the Outer Urban area, increased public transport uptake, increasing walking and cycling in Central areas.
 
-
-The JTW data was collected prior to the covid pandemic. According to X since the pandemic the number of commuters have significantly dropped. As the workforce environment has change where working from home has become an option more people have been working from. 
+The JTW data was collected prior to the covid pandemic. According to X since the pandemic the number of commuters have significantly dropped. As the workforce environment has change where working from home has become an option more people have been working from.
 
 ```{r, echo = FALSE, warning = FALSE}
 
@@ -252,18 +200,8 @@ jtw_driving_akl[jtw_driving_akl == -999] <- 0
 jtw_driving_akl$total_driving <-  jtw_driving_akl$Drive_a_company_car_truck_or_van +
   jtw_driving_akl$Drive_a_private_car_truck_or_van
 
-sum(jtw_driving_akl$total_driving)
-###############
-
-jtw_driving_akl$total_driving_travellers <- 
-  ifelse(jtw_driving_akl$Drive_a_company_car_truck_or_van >0, jtw_driving_akl$Drive_a_company_car_truck_or_van, 0) +
-  ifelse(jtw_driving_akl$Drive_a_private_car_truck_or_van >0, jtw_driving_akl$Drive_a_private_car_truck_or_van, 0) 
-
- ifelse(jtw_driving_akl$Drive_a_private_car_truck_or_van >0, jtw_driving_akl$Drive_a_private_car_truck_or_van, 0) ==  jtw_driving_akl$Drive_a_private_car_truck_or_van
- 
-###########
-
-class(sa2_clipped_geo_akl)
+#sum(jtw_driving_akl$total_driving)
+#class(sa2_clipped_geo_akl)
 
 # usual residence
 sa2_usual_res_driving <- sa2_clipped_geo_akl[c("SA22021_V1", "SA22021__1",  "geometry")] %>% 
@@ -321,8 +259,7 @@ mapview(sa2_work_driving, zcol = "Total Driving")
 
 ```
 
-
-```{r figs1, echo = FALSE, warning = FALSE, fig.align = "middle", fig.width=7,fig.height=6,fig.cap="\\label{fig:figs1}Figure: Usual Residence vs Workpalce "} 
+```{r figs1, echo = FALSE, warning = FALSE, fig.align = "middle", fig.width=7,fig.height=6,fig.cap="\\label{fig:figs1}Figure: Usual Residence vs Workpalce "}
 
 grid.newpage()
 pushViewport(viewport(layout=grid.layout(1,2)))
@@ -332,41 +269,21 @@ print(p2, vp=viewport(layout.pos.col = 2))
 
 
 ```
+
 in Figure \ref{fig:figs1} we see examples of plotting in R.
 
-
-In Figure 1, notice that the usual residence (left plot) plot has the usual 
-residence scattered across Auckland. However, the areas where the commuters work 
-(right plot) the commuters are located in specific Statistical Area 2 areas, 
-predominantly in Penrose, East Tamaki, North Harbour, Auckland Airport and 
-Manukau Central. 
-
-
-
-
-
+In Figure 1, notice that the usual residence (left plot) plot has the usual residence scattered across Auckland. However, the areas where the commuters work (right plot) the commuters are located in specific Statistical Area 2 areas, predominantly in Penrose, East Tamaki, North Harbour, Auckland Airport and Manukau Central.
 
 ++++++++++++++
 
-(Notes from Simon) - find literature where this was used - dig out other
-implementations - where did u get it from, how was it collected - what
-is the methodology used to collect the data - what analysis statsnz has
-performed - defined what you want to do with the data - what are the
-high level goals with the data, construct or estimate the routes for all
-those commutes. Estimate the traffic on those routes that are due to
-commute. - estimate this with the crash sites - how dangerous are
-potential routes - going back to the sources or residence location, how
-dangerous are there commutes on particular locations (SA2 polygon usual
-residence)
-
-
+(Notes from Simon) - find literature where this was used - dig out other implementations - where did u get it from, how was it collected - what is the methodology used to collect the data - what analysis statsnz has performed - defined what you want to do with the data - what are the high level goals with the data, construct or estimate the routes for all those commutes. Estimate the traffic on those routes that are due to commute. - estimate this with the crash sites - how dangerous are potential routes - going back to the sources or residence location, how dangerous are there commutes on particular locations (SA2 polygon usual residence)
 
 ### b. CAS data
 
 ```{r}
 
 ## CAS data
-cas_data <- readRDS("../data/Crash_Analysis_System_(CAS)_data.rds")
+cas_data <- readRDS("data/Crash_Analysis_System_(CAS)_data.rds")
 
 ## create a new column called non_injury_crash
 cas_data$non_injury_crash <- ifelse(cas_data$crashSeverity == 'Non-Injury Crash', 1, 0)
@@ -397,7 +314,6 @@ cas_data_akl_2018_geo <-  cas_data_akl_geo[(cas_data_akl_geo$crashYear == 2018 &
 
 ```
 
-
 ```{r echo = FALSE}
 #insert crashes over time by type of crashes
 
@@ -426,9 +342,6 @@ ggplot(cas_data_per_year, aes(x = crashYear, y = Total)) +
 
 ```
 
-
-
-
 ```{r}
 #mapview(st_geometry(cas_data_akl_geo[cas_data_akl_geo$crashSeverity != "Non-Injury Crash", ])[1:1000], 
 #        alpha = 0.05,  
@@ -436,7 +349,6 @@ ggplot(cas_data_per_year, aes(x = crashYear, y = Total)) +
 #        layer.name = "Injury Crash for all crash years",
 #        cex = 2) #change alpha from 0.1 to 0.05
 ```
-
 
 <https://www.nzta.govt.nz/safety/partners/crash-analysis-system/>
 
@@ -448,90 +360,57 @@ ggplot(cas_data_per_year, aes(x = crashYear, y = Total)) +
 
 <https://www.arcgis.com/sharing/rest/content/items/8d684f1841fa4dbea6afaefc8a1ba0fc/info/metadata/metadata.xml?format=default&output=html>
 
-This data comes from the Waka Kotahi Crash Abalysis System (CAS), which
-records all traffic crashes reported to us by the NZ Police. CAS legal
-access with a motor vehicle.
+This data comes from the Waka Kotahi Crash Abalysis System (CAS), which records all traffic crashes reported to us by the NZ Police. CAS legal access with a motor vehicle.
 
 The data updates monthly, in the first week of each month.
 
-Data is currently available from 1 Janauray 2000. the dataset includes
-crash variables that are non-personal data.
+Data is currently available from 1 Janauray 2000. the dataset includes crash variables that are non-personal data.
 
 Data quality statement:
 
-NZ transport aim to process all fatal crashes within one working day of
-receiving the crash report from NZ Police.
+NZ transport aim to process all fatal crashes within one working day of receiving the crash report from NZ Police.
 
-We aim to process all injury crashes (serious and minor injury) within 4
-weeks of receiving the crash report. It may take up to seven months for
-non-injury crashes to be processes in CAS.
+We aim to process all injury crashes (serious and minor injury) within 4 weeks of receiving the crash report. It may take up to seven months for non-injury crashes to be processes in CAS.
 
-Up-to-date information on current number of outstanding crash reports
-Most unprocessed crash reports will be for crashes where there weren't
-any injuries.
+Up-to-date information on current number of outstanding crash reports Most unprocessed crash reports will be for crashes where there weren't any injuries.
 
 Data quality caveats:
 
--   This data comes from the road traffic crash database Crash Analysis
-    System (CAS) version 2.1.0.
+-   This data comes from the road traffic crash database Crash Analysis System (CAS) version 2.1.0.
 
--   As the data is live, data can sometimes change after we received it,
-    that is the data is not static after we publish it.
+-   As the data is live, data can sometimes change after we received it, that is the data is not static after we publish it.
 
--   After a crash, NZ Police send us a Traffic Crash Report (TCR). This
-    may not happen immediately. A crash must have happened on a road to
-    be recorded in CAS. The CAS definition of a road is any street,
-    motorway or beach, or place that can access with a motor vehicle.
+-   After a crash, NZ Police send us a Traffic Crash Report (TCR). This may not happen immediately. A crash must have happened on a road to be recorded in CAS. The CAS definition of a road is any street, motorway or beach, or place that can access with a motor vehicle.
 
-There is a lag between the time of a crash to CAS having full and
-correct crash records. This is due to the police reporting time frame,
-and data processing.
+There is a lag between the time of a crash to CAS having full and correct crash records. This is due to the police reporting time frame, and data processing.
 
-People don't report all crashes to the NZ Police. The level of reporting
-increases with the severity of the crash.
+People don't report all crashes to the NZ Police. The level of reporting increases with the severity of the crash.
 
 Crash severity is the severity of the worst injury in the crash.
 
-There may be more than one injusry in a crasg. 2020 and 2021 data is
-incomplete.
+There may be more than one injusry in a crasg. 2020 and 2021 data is incomplete.
 
 Data about all traffic crashes reported to us by the NZ Police
 
 ++++++++++++++++++++
 
-Waka Kotahi NZ Transport Agency manages the Crash Analysis System (CAS);
-New Zealand's primary tool for capturing information on where, when and
-how road crashes occur.
+Waka Kotahi NZ Transport Agency manages the Crash Analysis System (CAS); New Zealand's primary tool for capturing information on where, when and how road crashes occur.
 
-The system provides toos to analyse and map crashes, and enables users
-to identify high-risk locations and monitor trends and crash sites. This
-information helps inform transport policy, designa nd prioritise road
-safety improvements and monitor their effectiveness.
+The system provides toos to analyse and map crashes, and enables users to identify high-risk locations and monitor trends and crash sites. This information helps inform transport policy, designa nd prioritise road safety improvements and monitor their effectiveness.
 
-CAS is used by a range of organisations all with the broad aim of
-improving road safety. It is an essential tool in supporting the
-Government's road safety stratefy Road to zero. The strategy adopts a
-Vision Zero approach - a New Zealand where no-one is killed or seriously
-injured in road crashes, and where no death or serious injury while
-travelling on our roads is acceptable. CAS enab;es the transport sector
-over the long term, to improve road safety through knowledge, research
-and the measurements of the effects of changes to the network and
-network user behaviour.
+CAS is used by a range of organisations all with the broad aim of improving road safety. It is an essential tool in supporting the Government's road safety stratefy Road to zero. The strategy adopts a Vision Zero approach - a New Zealand where no-one is killed or seriously injured in road crashes, and where no death or serious injury while travelling on our roads is acceptable. CAS enab;es the transport sector over the long term, to improve road safety through knowledge, research and the measurements of the effects of changes to the network and network user behaviour.
 
 ### c. SA2 Polygons
 
-https://catalogue.data.govt.nz/dataset/statistical-area-2-2018-clipped-generalised
+<https://catalogue.data.govt.nz/dataset/statistical-area-2-2018-clipped-generalised>
 
-This dataset is definitive set of statistical area 2 (SA2) boundaries at 1 January 2018, clipped to the coastline. This clipped version has been create for map creation/cartographic purposes and may not fully represent the official full extent boundaries. SA2 is a new output geography that provides higher aggregations of population data that can be provided at the statistical area 1 (SA1) level. SA2s are defined at meshblock and SA1 levels 
+This dataset is definitive set of statistical area 2 (SA2) boundaries at 1 January 2018, clipped to the coastline. This clipped version has been create for map creation/cartographic purposes and may not fully represent the official full extent boundaries. SA2 is a new output geography that provides higher aggregations of population data that can be provided at the statistical area 1 (SA1) level. SA2s are defined at meshblock and SA1 levels
 
-Digital boundary data became freely available on 1 July 2007. This generalised version has been simplified for rapid drawing and is designed for thematic or web mapping purposes. 
+Digital boundary data became freely available on 1 July 2007. This generalised version has been simplified for rapid drawing and is designed for thematic or web mapping purposes.
 
 For further information see ANZLIC Metadata 2018 Statistical Area 2 attachment below.
 
-Please note that a review of SA2 names was undertaken in early 2018. The review addressed issues with inconsistent naming and applied corrections, resulting in an update to this dataset applied in May 2018. All SA2 codes are unchanged. 
-
-
-
+Please note that a review of SA2 names was undertaken in early 2018. The review addressed issues with inconsistent naming and applied corrections, resulting in an update to this dataset applied in May 2018. All SA2 codes are unchanged.
 
 ### d. Auckland Traffic Counter
 
@@ -550,25 +429,19 @@ Please note that a review of SA2 names was undertaken in early 2018. The review 
 
 <https://at.govt.nz/about-us/reports-publications/traffic-counts/>
 
--   Information about traffic volumes assists with road design and in
-    prioritizing network improvements.
+-   Information about traffic volumes assists with road design and in prioritizing network improvements.
 
--   Traffic count data is also valuable in assessing road safety risk
-    exposure and helping identify how effective past improvements have
-    been.
+-   Traffic count data is also valuable in assessing road safety risk exposure and helping identify how effective past improvements have been.
 
-The Auckland Transport traffic flow counting programme is carried out
-based on road hierarchy and need.
+The Auckland Transport traffic flow counting programme is carried out based on road hierarchy and need.
 
-While all due care has been taken in the prepration and provision of
-thsi service, Auckland Transport does not give any warranty that the
-information contained is accurate and accept
+While all due care has been taken in the prepration and provision of thsi service, Auckland Transport does not give any warranty that the information contained is accurate and accept
 
 ## 4.3 Libraries Used/Packages
 
 ### a. ghroute
 
-https://github.com/s-u/ghroute
+<https://github.com/s-u/ghroute>
 
 GHRoutes is a class of objects representing results from the GraphHopper routing when output="gh" is used.
 
@@ -580,72 +453,58 @@ It is the only result type which supports representation of alternative routes. 
 
 Note that this API is considered experimental and is subject to change.
 
-
 ### b. sf
 
-A surge in development tine (and interest) in 'R-spatial' has followed the award of a grant by the R consortium for the development of support for Simple Features, an open-source standard and model to store and access vector geometries.This result in the sf package (section 2.2.1).
-Multiple places reflect the immense interest in sf. This is especially true for the R-sig-Geo Archives, a long-standing open access email list containiing much R-spatial wisdom accumulated over the years. 
+A surge in development tine (and interest) in 'R-spatial' has followed the award of a grant by the R consortium for the development of support for Simple Features, an open-source standard and model to store and access vector geometries.This result in the sf package (section 2.2.1). Multiple places reflect the immense interest in sf. This is especially true for the R-sig-Geo Archives, a long-standing open access email list containiing much R-spatial wisdom accumulated over the years.
 
-
-Simple features is an open standard developed and endorsed by the Open Geospatial Consortium (OGC), a not-for-profit organisation whose activities we will revisit in a later chapter in section 7.5. 
+Simple features is an open standard developed and endorsed by the Open Geospatial Consortium (OGC), a not-for-profit organisation whose activities we will revisit in a later chapter in section 7.5.
 
 Simple features is a hierarchical data model that represents a wide range of geometry types. Of 17 geometry types supported by the specification, only 7 are used in the vast majority of geographic research (see Fig 2.2); these core geometry types are fully supported by the R package sf (Pebesma, 2018)
 
 sf can represent all common vector geometry types (raster data classer are not supported by sf): points, lines, polygons and their respective 'multi' versions (which group together features of the same type into a single feature).
 
-sf also supports geometry collections, whcih can contain multiple geometry types in a single object. 
+sf also supports geometry collections, whcih can contain multiple geometry types in a single object.
 
-sf largely supersedes the sp ecosystem, which comprises sp (Pebesma abd Bivand), rgdal for data read/write (Bivand et al., 2018)
-and rgeos for spatial operations (Bivand and Rundel, 2018).
-The package is well documented, as can be seen on its website and in 6 vignettes.
+sf largely supersedes the sp ecosystem, which comprises sp (Pebesma abd Bivand), rgdal for data read/write (Bivand et al., 2018) and rgeos for spatial operations (Bivand and Rundel, 2018). The package is well documented, as can be seen on its website and in 6 vignettes.
 
 **The advantages of using sf**
 
-Simple features is a widely supported data model that underlies data structures in many GIS applications including QGIS and PostGIS. 
-A major advantage of thhis is that using the data model ensures your work is cross-transferable to other set-ups, for example importing from and exporting to spatial databases. 
+Simple features is a widely supported data model that underlies data structures in many GIS applications including QGIS and PostGIS. A major advantage of thhis is that using the data model ensures your work is cross-transferable to other set-ups, for example importing from and exporting to spatial databases.
 
-A more specific question from an R perspective is "Why use the sf package when sp is already tried and tested"?
-There are many reasons (linked to the advantages )
+A more specific question from an R perspective is "Why use the sf package when sp is already tried and tested"? There are many reasons (linked to the advantages )
 
-- Fast reading and writing of data
-- Enhanced plotting performance
-- sf objects can be treated as data frames in most operations
-- sf functions can be combined using %>%  operator and works well with the tidyverse collection of R packages
--sf function names are relatively consistent and intuitive (all begin with st_)
+-   Fast reading and writing of data
+-   Enhanced plotting performance
+-   sf objects can be treated as data frames in most operations
+-   sf functions can be combined using %\>% operator and works well with the tidyverse collection of R packages -sf function names are relatively consistent and intuitive (all begin with st\_)
 
 Due to such advantages, some spatial packages (including tmap, mapview and tidycensus) have added support for sf. However, it will take many years for most packages to transition and some will never switch. Fortunately, these can still be used in a workflow based on sf objects, by converting them to the Spatial class used in sp.
 
 Lovelace, R., Nowosad, J., & Muenchow, J. (2019). Geocomputation with R. Chapman and Hall/CRC.
 
-
 ### c. autocorrelation/spdep
 
-Using spdep package was explored for spatial autocorrelation functions and spatial error models fitted with functions from the sphet (Piras 2021) and spatialreg (Bivand and Piras 2021) packages. 
+Using spdep package was explored for spatial autocorrelation functions and spatial error models fitted with functions from the sphet (Piras 2021) and spatialreg (Bivand and Piras 2021) packages.
 
 In spdep (Vivand 2022b), use is made of planar spatial indexing to find candidate neighbors for objects in projected coordinate reference system, and the neighborhood status (none, rook or queen) is then checked using a planar snap distance.
 
 If the objects are in unprojected coordinate reference syste,s. as is the case here, the candidate neighbors are found using spherical spatial indexing in the s2 package.
 
-There is a minor cost to the use of spherical rathern than planar topological predicates but only roughly a doubling of processing time. 
-R spatial packages are choosing to prefer spherical rather than planar representations for geograpgical coordinate reference systems because straight line segments between two points are only straight in planer settings, not in spherical pretending to be planar, something we have known at least since Al-Khwarizmi. 
-
+There is a minor cost to the use of spherical rathern than planar topological predicates but only roughly a doubling of processing time. R spatial packages are choosing to prefer spherical rather than planar representations for geograpgical coordinate reference systems because straight line segments between two points are only straight in planer settings, not in spherical pretending to be planar, something we have known at least since Al-Khwarizmi.
 
 Bivand, R. (2022). R Packages for Analyzing Spatial Data: A Comparative Case Study with Areal Data. Geographical Analysis.
 
-
 Bivand, R. S. (2022b). spdep: Spatial Dependence: Weighting Schemes, Statistics. R Package Version 1.2-1.
-
-
 
 ## VISUALISATION
 
-A satisfying and important aspect of geographic research is communication the results. 
+A satisfying and important aspect of geographic research is communication the results.
 
 Map making - the art of cartography - is an ancient skill that involves communications, intuition, and an element of creativity.
 
-Static mapping is straighforward with plot(). 
+Static mapping is straighforward with plot().
 
-It is possible to create advanced maps using base R methods (Murrel, 2016), but this chapter focuses on dedicated map-making packages. 
+It is possible to create advanced maps using base R methods (Murrel, 2016), but this chapter focuses on dedicated map-making packages.
 
 A carefully crafter map is vital for effectively communicating the results of your work (Brewer, 2015).
 
@@ -653,58 +512,50 @@ Amateur-looking maps can undermine your audience's ability to understand importa
 
 Maps have neen used for several thousand years for a wide variety purposes. Historic examples include maps of buildings and land ownership in the Old Babylonian dysnasty more than 3000 years ago and ptolemy's world map in his masterpiece geography nearly 2000 years ago (talber, 2014)
 
-Map are often the best way to present finding of geocomputational research in a way that is accessible. Map making is therefore a critical part of geocomputation and its emphasis not only describing, but also changing the world. 
+Map are often the best way to present finding of geocomputational research in a way that is accessible. Map making is therefore a critical part of geocomputation and its emphasis not only describing, but also changing the world.
 
 Lovelace, R., Nowosad, J., & Muenchow, J. (2019). Geocomputation with R. Chapman and Hall/CRC.
 
 ### d. mapview
 
-Mapview is the quickest way to create interactive maps.
-It uses 'one liner' is a reliable way to interactively explore a wide range of geographic data formats:
+Mapview is the quickest way to create interactive maps. It uses 'one liner' is a reliable way to interactively explore a wide range of geographic data formats:
 
-mapview has a concise syntax yet is powerful. 
-By default, it provides some standard GIS functionality such as mouse position information, attribute queries (via pop-ups), scale bar and zoom-to-layer buttons. It offers advanced controls including the abilitty to 'burst; datasets into multiple layers and the addition of multiple layers with '+' followed by the name of a geographic object. 
+mapview has a concise syntax yet is powerful. By default, it provides some standard GIS functionality such as mouse position information, attribute queries (via pop-ups), scale bar and zoom-to-layer buttons. It offers advanced controls including the abilitty to 'burst; datasets into multiple layers and the addition of multiple layers with '+' followed by the name of a geographic object.
 
-Additionally, it ptovides automatic coloring attributes (via argument zcol). In essence, it can be considered a data-driven leaflet API . Given that mapview always exotect a spatial object (sf, Spatial*, Raster*) as its argument, it works will at the end of piped expressions. 
+Additionally, it ptovides automatic coloring attributes (via argument zcol). In essence, it can be considered a data-driven leaflet API . Given that mapview always exotect a spatial object (sf, Spatial*, Raster*) as its argument, it works will at the end of piped expressions.
 
-One important thing to keep in mind is that  mapview layers are added via the + operator (similar to ggplot2 or tmap).
-This is a frequent gotcha in piped workflows where the main binding operator is %>%.
+One important thing to keep in mind is that mapview layers are added via the + operator (similar to ggplot2 or tmap). This is a frequent gotcha in piped workflows where the main binding operator is %\>%.
 
 For further information on mapview, see the package's websiter-spatial.github.io/mapview/11.
-
-
 
 Lovelace, R., Nowosad, J., & Muenchow, J. (2019). Geocomputation with R. Chapman and Hall/CRC.
 
 ### e. leaflet
 
-leaflet is the most mature and widely used interactive mapping package in R. 
-leaflet provides a relatively low-level interface to the Leaflet  javaScript library and many of its arguments can be understood by reading the documentation of the original JavaScript library.
+leaflet is the most mature and widely used interactive mapping package in R. leaflet provides a relatively low-level interface to the Leaflet javaScript library and many of its arguments can be understood by reading the documentation of the original JavaScript library.
 
-leaflet maps are created with leaflet(), the result of which is a leaflet map obkect can be piped to other leaflet functions. This allows multiple map layers and control settings to be added interactively, as demonstrated in the code below which egenrates. 
+leaflet maps are created with leaflet(), the result of which is a leaflet map obkect can be piped to other leaflet functions. This allows multiple map layers and control settings to be added interactively, as demonstrated in the code below which egenrates.
 
-The release of the leaflet package in 2015 revolutionized interactive web map creation from within R and a number of packages have built on these foundations adding new features (e.g. leaflet.extras) and making the creation of web maps as simple as creating static maps (e.g. mapview and tmap). This 
+The release of the leaflet package in 2015 revolutionized interactive web map creation from within R and a number of packages have built on these foundations adding new features (e.g. leaflet.extras) and making the creation of web maps as simple as creating static maps (e.g. mapview and tmap). This
 
 Lovelace, R., Nowosad, J., & Muenchow, J. (2019). Geocomputation with R. Chapman and Hall/CRC.
 
-
 ### f. tmap
 
-Static maprs are the most common type of visual output from geocomputation. 
+Static maprs are the most common type of visual output from geocomputation.
 
-Fixed images for printed outputs, common formats for static maps include .png and .pdf for raster and vector outputs, respectively. 
+Fixed images for printed outputs, common formats for static maps include .png and .pdf for raster and vector outputs, respectively.
 
 Why tmp?
 
-- it is a powerful and flexible map-making package with sensible defaults.
-- it has a concise syntax that allows for the creation of attractive maps with minimal code, which will be familiar to ggplot2 users.
+-   it is a powerful and flexible map-making package with sensible defaults.
+-   it has a concise syntax that allows for the creation of attractive maps with minimal code, which will be familiar to ggplot2 users.
 
-Furthermore, tmap has a unique capability to generate static and interactive maps using the same code via tmap_mode(). It accepts a wider range of spatial classes (including raster objects) than alternatives such as ggplot2, as documented in vignetteds tmap-getstarted and tmap-changes-v2 and an academic paper on the subject, 
+Furthermore, tmap has a unique capability to generate static and interactive maps using the same code via tmap_mode(). It accepts a wider range of spatial classes (including raster objects) than alternatives such as ggplot2, as documented in vignetteds tmap-getstarted and tmap-changes-v2 and an academic paper on the subject,
 
 Tmap is based on the idea of a grammar of graphics (Wilkinson adn Wills, 2005). This involves a separation between the input data and the aesthetics (how data are visualised): each input dataset can be 'mapped' in a range of different ways including location on the map (defined by data's geometry), color and other variables.
 
-The basic building block is tm_shape() (which defines input data, raster and vector objects), followed bu one ore more layer elements such as tm_fill() and tm_dots(). 
-
+The basic building block is tm_shape() (which defines input data, raster and vector objects), followed bu one ore more layer elements such as tm_fill() and tm_dots().
 
 Lovelace, R., Nowosad, J., & Muenchow, J. (2019). Geocomputation with R. Chapman and Hall/CRC.
 
@@ -714,79 +565,49 @@ Lovelace, R., Nowosad, J., & Muenchow, J. (2019). Geocomputation with R. Chapman
 
 # 3 Methodology and Data Analysis (talk about the package)
 
--   The methodology used to address the research problem is clearly
-    specified so that an independent research could replicate the
-    results.
+-   The methodology used to address the research problem is clearly specified so that an independent research could replicate the results.
 
 -   All important concepts used in research are clearly explained
 
--   Statements and claims are appropriately supported with results or
-    evidence, e.g. by citing related work.
+-   Statements and claims are appropriately supported with results or evidence, e.g. by citing related work.
 
-Assumptions and limitations of the research of the research are stated
-and their implications discussed.
+Assumptions and limitations of the research of the research are stated and their implications discussed.
 
-The research outcomes are critically evaluated (reporting strengths and
-weaknesses)
+The research outcomes are critically evaluated (reporting strengths and weaknesses)
 
 ## 3.1 Assumptions
 
--   Assuming that start and end of the journey of a commuter using
-    driving as a method for driving is the centroid of SA2
+-   Assuming that start and end of the journey of a commuter using driving as a method for driving is the centroid of SA2
 
--   Due to data sensitivity, stats NZ does not provide actual start and
-    end coordinates of each travel
+-   Due to data sensitivity, stats NZ does not provide actual start and end coordinates of each travel
 
--   We assumed that the router provides the best route from source to
-    destination
+-   We assumed that the router provides the best route from source to destination
 
 ## 3.2 Overview
 
-This project is inspired from the saferActive research so it is applied
-in a New Zealand context (robin lovelace).
-We developed a methodology to estimate the casualty rate per billion km for 
-walking and cycling.
+This project is inspired from the saferActive research so it is applied in a New Zealand context (robin lovelace). We developed a methodology to estimate the casualty rate per billion km for walking and cycling.
 
-Casualty data is available in the R package, broken down into fatal, serious, 
-minor and non-injury crash. We  have filtered these by mode of travel, 
-identifying driving casualties. 
+Casualty data is available in the R package, broken down into fatal, serious, minor and non-injury crash. We have filtered these by mode of travel, identifying driving casualties.
 
-To obtain KSI/bkm for cycle casualties, we have estimated the number of kilometers 
-driven in each statistical area 2 polygon. Using the 2018 census data for journey to work
-and ghroute R package, we were able to create a route for each source and destination pairs.
+To obtain KSI/bkm for cycle casualties, we have estimated the number of kilometers driven in each statistical area 2 polygon. Using the 2018 census data for journey to work and ghroute R package, we were able to create a route for each source and destination pairs.
 
-Each road segment within the route network is assigned to a SA2 polygon based if 
-the route intersects with the said SA2 polygon.  Multiplying the number of each 
-commuters using each segment by the length of the segment this gives the number of km cycled within each SA2.
+Each road segment within the route network is assigned to a SA2 polygon based if the route intersects with the said SA2 polygon. Multiplying the number of each commuters using each segment by the length of the segment this gives the number of km cycled within each SA2.
 
-To obtain sufficient sample size we use CAS data for the years 2016 to 2020. 
-However, our estimated km of driving only covers one-way commuter journeys 
-on a single in 2018. We assumed that the driving commute is during peak period 
-which is usually 7:30 - 9:30 am as suggested by Auckland Transport.
-We then divided the number of casualties by two (to represent one-way journeys) 
-then by five (to repesent a single year) and again 261 days 
-(to represent a single day)
+To obtain sufficient sample size we use CAS data for the years 2016 to 2020. However, our estimated km of driving only covers one-way commuter journeys on a single in 2018. We assumed that the driving commute is during peak period which is usually 7:30 - 9:30 am as suggested by Auckland Transport. We then divided the number of casualties by two (to represent one-way journeys) then by five (to repesent a single year) and again 261 days (to represent a single day)
 
-There is a strong positive/negative relationship between distance travelled and KSI/bkm.
-There is a positive relationship between the distance travelled by the commuter 
-and the number of crashes the commuter is exposed. 
+There is a strong positive/negative relationship between distance travelled and KSI/bkm. There is a positive relationship between the distance travelled by the commuter and the number of crashes the commuter is exposed.
 
 ## 3.3 Limitations
 
--   The most recent latest journey to work data is 2018. Noting that due
-    to COVID and changes over time, journey to work have changed.
-    
+-   The most recent latest journey to work data is 2018. Noting that due to COVID and changes over time, journey to work have changed.
 
 ## 3.4 Simulating Routes
 
-We use the function get_routes from the motroadsafety package developed to simulate the routes of commuters where they drove from their usual residence in Auckland to their workplace. Both source and destination are SA2 centroids. Due to privacy, the data does
-not contain the actual address of the commuters.
+We use the function get_routes from the motroadsafety package developed to simulate the routes of commuters where they drove from their usual residence in Auckland to their workplace. Both source and destination are SA2 centroids. Due to privacy, the data does not contain the actual address of the commuters.
 
-The get_route() function uses ghroute capability to find the fastest route between source and destination. the  ghroute intializes a GraphHipper router with a specific profile and data routes. In our case we have used 'car' as the profile as we wanted to simulate commuters driving route network and used the osm fie which is availble in this to provide the network in New Zealand. 
+The get_route() function uses ghroute capability to find the fastest route between source and destination. the ghroute intializes a GraphHipper router with a specific profile and data routes. In our case we have used 'car' as the profile as we wanted to simulate commuters driving route network and used the osm fie which is availble in this to provide the network in New Zealand.
 
-The below figure represents all the routes for all the routes where the commuter resides in Auckland. Notice that there is on commuter who have travelled from Auckland to Wellington, which interestingly  is a long commute.
-
-
+The below figure represents all the routes for all the routes where the commuter resides in Auckland. Notice that there is on commuter who have travelled from Auckland to Wellington, which interestingly is a long commute.
 
 ```{r, warning=FALSE, echo = FALSE}
 
@@ -806,25 +627,21 @@ jtw_driving_akl_with_routes <- cbind(jtw_akl_routes, jtw_driving_akl_2)
 
 ```
 
-
 ```{r}
 mapview(jtw_driving_akl_with_routes[1:20, ], 
         layer.name = "Auckland Driving Commutes")
 
 ```
 
-
 ## 3.5 Getting the Distance Travelled (Exposure)
 
-Exposure is defined as the distance travelled by the commuter. 
+Exposure is defined as the distance travelled by the commuter.
 
-The get_dist_travel() function enable us to calculate the distance travelled or exposure of a given commuter in a given SA2 polygon. 
+The get_dist_travel() function enable us to calculate the distance travelled or exposure of a given commuter in a given SA2 polygon.
 
-This function will be helpful to aggregate the total exposure by SA2 polygon and subsequently allows us to calculate the risk. 
+This function will be helpful to aggregate the total exposure by SA2 polygon and subsequently allows us to calculate the risk.
 
-The function mainly uses the sf st_intersection() function to determine the route line segment that is within a polygon, in this case the SA2 polygon. 
-
-
+The function mainly uses the sf st_intersection() function to determine the route line segment that is within a polygon, in this case the SA2 polygon.
 
 ```{r}
 
@@ -847,36 +664,105 @@ dist_travel[!is.na(dist_travel$total_dist), ]
  
 ```
 
-
 ## 3.6 Risk
 
-**Risk**
-- Calculated as the number of crashed divided by exposure
+**Risk** - Calculated as the number of crashed divided by exposure
 
 `((CAS for 5 years data filtered during peak period / 2 journey)  / 5 years / 261 days)` / `exposure (distance traveled)`
 
-We ta
+ (cas 2018/2 journey) / 
+ 
+ 
+ - put a buffer in the polygon, 10 meters to capture the crash points
+ - 5 meters and try as well
+ 
+ +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 
+Risk is calculated as the total number of crashes in a given SA2 divided by the distance travelled that intersected in that SA2.
+
+Buffers are polygons representing the area within a given distance of a geometric feature: regardless of whether the input is a point, line or polygon, the ouput is a polygon.
+Un
+(Geocomputation Robin Lovelace)
+
 
 
 ```{r}
 
+cas_data_akl_2018_proj
+
+sa2_clipped_proj_akl
+
+sa2_clipped_proj_akl_buffer_10m <- st_buffer(sa2_clipped_proj_akl, dist = 10)
+
+Fatal Crash      Minor Crash Non-Injury Crash    Serious Crash 
+            7115           179089           546781            43893 
+
+
+sa2_clipped_proj_akl$fatal_crashes <- lengths(st_intersects(sa2_clipped_proj_akl_buffer_10m, cas_data_akl_2018_proj[cas_data_akl_2018_proj$crashSeverity == 'Fatal Crash', ]))
+
+sa2_clipped_proj_akl$serious_crashes <- lengths(st_intersects(sa2_clipped_proj_akl_buffer_10m, cas_data_akl_2018_proj[cas_data_akl_2018_proj$crashSeverity == 'Serious Crash', ]))
+
+sa2_clipped_proj_akl$minor_crashes <- lengths(st_intersects(sa2_clipped_proj_akl_buffer_10m, cas_data_akl_2018_proj[cas_data_akl_2018_proj$crashSeverity == 'Minor Crash', ]))
+
+sa2_clipped_proj_akl$noninjury_crashes <- lengths(st_intersects(sa2_clipped_proj_akl_buffer_10m, cas_data_akl_2018_proj[cas_data_akl_2018_proj$crashSeverity == 'Non-Injury Crash', ]))
+
+mapview(sa2_clipped_proj_akl, zcol = "fatal_crashes", layer.name = "Fatal Crash")
+
+mapview(sa2_clipped_proj_akl, zcol = "noninjury_crashes", layer.name = "Non-Injury Crash")
+
+
+## serious crashes per SA2
+mapview(sa2_clipped_proj_akl %>% mutate(total_serious_cas = fatal_crashes + serious_crashes), 
+        zcol = "total_serious_cas", layer.name = "Killed or Serious Injury Crashes")
+
+
+
 ```
 
 
+
+```{r}
+
+risk_output <- get_risk(st_coordinates(cas_data_akl_2018_proj)[, "X"], st_coordinates(cas_data_akl_2018_proj)[, "Y"], cas_data_akl_2018_proj$seriousInjuryCount + cas_data_akl_2018_proj$fatalCount, sa2_clipped_proj_akl)
+
+  crash_data <-  data.frame(total_crash_weight = crash_weight,
+                            crash_lat = crash_lat,
+                            crash_lng = crash_lng)
+  
+  #change lat and lng as sf objects
+  crash_data_sf <- st_as_sf(crash_data, coords = c("crash_lng", "crash_lat"),
+                            crs = crs)
+  
+  #calculating the risk exposure
+  output <- st_join(polygon, crash_data_sf)
+  
+  output <- output  %>%
+    group_by_at(vars(-total_crash_weight, -geometry)) %>%
+    summarise(total_crash_weight = sum(total_crash_weight)) 
+    
+  
+  return(output)
+  
+  
+  
+cas
+
+
+
+
+```
+
 ## 3.7 Route Riskiness
 
-route_risk() function calculates the total crash a route encounters for a given radius. 
-The default radius is 5 meters but this can be modified. 
+route_risk() function calculates the total crash a route encounters for a given radius. The default radius is 5 meters but this can be modified.
 
-As per below example, the commuter traveled from Pukekohe Central to Shortland St and has been exposed to 431 crashes on that route. This is relatively a risky routes and led our hypothesis that longer distance traveled would be exposed to more crash points. 
+As per below example, the commuter traveled from Pukekohe Central to Shortland St and has been exposed to 431 crashes on that route. This is relatively a risky routes and led our hypothesis that longer distance traveled would be exposed to more crash points.
 
-We have fitted a linear model to describe crash points with distance travelled. The residual plot of a simple linear model showed fairly constant scatter. 
+We have fitted a linear model to describe crash points with distance travelled. The residual plot of a simple linear model showed fairly constant scatter.
 
 All model assumptions look satisfied once we added the quadratic term to the linear model.
 
-**(Should we use poisson as we are predicting counts data)***
-
-
+**(Should we use poisson as we are predicting counts data)**\*
 
 ```{r}
 
@@ -903,13 +789,11 @@ jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$SA2_name_usual_residence
 
 ```
 
-
 ```{r}
 
 
 
 ```
-
 
 ```{r}
 ##we need the data to be projected
@@ -923,7 +807,6 @@ route_riskiness_d_proj <- route_risk(jtw_driving_akl_with_routes_proj,
 
 
 ```
-
 
 ```{r}
 
@@ -960,21 +843,23 @@ route_riskiness_d_proj[route_riskiness_d_proj$total_traveler_times_cas == 909432
 ## assuming that the crash occured during a working day
 jtw_driving_akl_SA2_cas_dep$cas_per_SA2_res <- jtw_driving_akl_SA2_cas_dep$total_traveler_times_cas / 
   jtw_driving_akl_SA2_cas_dep$total_driving_travellers
-```
 
+
+mapview(jtw_driving_akl_SA2_cas_dep, zcol = "cas_per_SA2_res")
+
+
+mapview(jtw_driving_akl_SA2_cas_dep %>% mutate(cas_per_SA2_res = sqrt(cas_per_SA2_res)), zcol = "cas_per_SA2_res")
+
+
+```
 
 ## 3.8 Validating the Routes
 
-We wanted to quantify how good our simulation is. 
-We have used Auckland Traffic Counter data from Auckland Transport to quantify 
-the performance of our route estimation noting that we only have SA2 centroids as opposed
-to an exact address. 
+We wanted to quantify how good our simulation is. We have used Auckland Traffic Counter data from Auckland Transport to quantify the performance of our route estimation noting that we only have SA2 centroids as opposed to an exact address.
 
-The method we use is for each traffic counter to compare the total total vehicles counted by the Auckland Transport during AM traffic versus the the total driving commuters where the route is within a given distance of the router. From here we need to decide the optimal radius between the Auckland traffic counter and the commuters source and destination route. We compare 10 meters vs 15 meters vs 20 meters we have found that 20 meters radius is the optimal number and taken into consideration teh typical road width (which varies on the type of road).
-The typical road width according to Auckland transport is.
+The method we use is for each traffic counter to compare the total total vehicles counted by the Auckland Transport during AM traffic versus the the total driving commuters where the route is within a given distance of the router. From here we need to decide the optimal radius between the Auckland traffic counter and the commuters source and destination route. We compare 10 meters vs 15 meters vs 20 meters we have found that 20 meters radius is the optimal number and taken into consideration teh typical road width (which varies on the type of road). The typical road width according to Auckland transport is.
 
 With 20 meters as the radius to measure to measure the distance between the commuter route and traffic counter, we have identified that approximately 30% (651 of 2331 traffic counter) the traffic counter is not within 20 meters radius from a given route. This is attributed to the fact that our source and destination are SA2 polygons, which means that we might have not all possible routes in Auckland.
-
 
 ```{r}
 
@@ -1003,17 +888,15 @@ at_traffic_count_2018_geo <- st_transform(at_traffic_count_2018_proj, crs = 4326
 
 ```
 
-Comparing 10 meters vs 15 meters vs 20 meters radius
-- it seems that 20 meters captures more signal compared to 10m and 15m as indicated below
+Comparing 10 meters vs 15 meters vs 20 meters radius - it seems that 20 meters captures more signal compared to 10m and 15m as indicated below
 
-`20 meters` - green
-`15 meters` - purple
-`10 meters` - yellow
+`20 meters` - green `15 meters` - purple `10 meters` - yellow
 
 ```{r}
 ## route 1488
     leaflet()%>% 
    addTiles() %>% 
+  leafem::addMouseCoordinates() %>% 
     addPolylines(data = st_geometry(st_transform(jtw_driving_akl_with_routes_proj[st_is_within_distance(jtw_driving_akl_with_routes_proj,
                       at_traffic_count_2018_proj[1488, ],
                       dist = 20, 
@@ -1038,54 +921,70 @@ Comparing 10 meters vs 15 meters vs 20 meters radius
                   col = 'yellow', 
                   radius = 10) %>% 
     addCircles(data = st_geometry(at_traffic_count_2018_geo[1488, ]), color = "red")
-    
+
+
+
+```
+
+```{r}
+
+## coordinates bounding box
+#https://gis.stackexchange.com/questions/310485/how-to-i-limit-the-x-and-y-axes-with-tmap-in-r
+
+lng: 174.79880
+lat: -36.85186
+
+lng: 174.80646
+lat: -36.85504
+
+tm_shape(World, bbox=tmaptools::bb(matrix(c(0,0,2000000,2000000),2,2))) +tm_polygons()
+
+tm_shape(World, bbox=tmaptools::bb(matrix(c(174.79880,174.80646,-36.85186,-36.85504),2,2))) +tm_polygons()
+
+
+tmap_mode("plot")
+tm_tiles(leaflet::providers$OpenStreetMap)
+
+
+osmap(cache.dir="tmp/osm")
+
+st_crs(World)
+
 ```
 
 
 ## 3.9 Autocorrelation
 
-https://data.cdrc.ac.uk/system/files/practical9_0.html
+<https://data.cdrc.ac.uk/system/files/practical9_0.html>
 
-Spatial Autocorrelation
-- measures how distance influences a particular variable
-- it quantifies the degree of which objects are similar to nearby objects. 
+Spatial Autocorrelation - measures how distance influences a particular variable - it quantifies the degree of which objects are similar to nearby objects.
 
-* Variables are said to have a **positive spatial autocorrelation** when similar values tend to be neared together than dissimilar values
+-   Variables are said to have a **positive spatial autocorrelation** when similar values tend to be neared together than dissimilar values
 
-Waldo Tober's first law of geography
-- "Everything is related to everything else, but near things are more related than distant things"
+Waldo Tober's first law of geography - "Everything is related to everything else, but near things are more related than distant things"
 
-- We would expect most geographic phenomena to exert a spatial autocorrelation of some kind
+-   We would expect most geographic phenomena to exert a spatial autocorrelation of some kind
 
 We can represent spatial autocorrelaton in two ways
 
-1.  global models 
-    - create a single measure which represent the entire data 
+1.  global models
+    -   create a single measure which represent the entire data
+2.  local models
+    -   lets us explore spatial clustering across space
 
-2. local models 
-    - lets us explore spatial clustering across space
-
-Running a local spatial autocorrelation
-- need to create a moran plot which looks at each of teh values plotted against their spatially lagged values
-- explores the relationship between the data and their neighbours as a scatter plot
-- The style refers to how the weights are coded. "W" are weights are row standardised (sums over all links to n)
-
+Running a local spatial autocorrelation - need to create a moran plot which looks at each of teh values plotted against their spatially lagged values - explores the relationship between the data and their neighbours as a scatter plot - The style refers to how the weights are coded. "W" are weights are row standardised (sums over all links to n)
 
 **Exploratory Spatial Data Analysis (ESDA)**
 
-https://towardsdatascience.com/what-is-exploratory-spatial-data-analysis-esda-335da79026ee
+<https://towardsdatascience.com/what-is-exploratory-spatial-data-analysis-esda-335da79026ee>
 
-- correlates a specific variable to a location, taking into account the values of the same variable in the neighbourhood. The methods used for this purpose are called Spatial Autocorrelation
+-   correlates a specific variable to a location, taking into account the values of the same variable in the neighbourhood. The methods used for this purpose are called Spatial Autocorrelation
 
-Spatial autocorrelation
-- Describing the presence (or absence) of spatial variations in a given variable.
-- Like, conventional correlation methods, Spatial autocorrelation has positive and negative values
+Spatial autocorrelation - Describing the presence (or absence) of spatial variations in a given variable. - Like, conventional correlation methods, Spatial autocorrelation has positive and negative values
 
-Positive Spatial autocorrelation
-- when areas close to each other have similar values (High-high, or Low-low)
+Positive Spatial autocorrelation - when areas close to each other have similar values (High-high, or Low-low)
 
-Negative Spatial autocorrelation
-- neighbourhood areas to be different (Low values next to high values).
+Negative Spatial autocorrelation - neighbourhood areas to be different (Low values next to high values).
 
 ```{r}
 # using the spatial autocorrelation functions available from the spdep package
@@ -1093,10 +992,10 @@ library(spdep)
 
 ```
 
-
 #### i. Getting The Neighbhours
 
 ##### Queen's Contiguity
+
 ```{r}
 
 ##using total 2018 CAS points per SA2 polygon
@@ -1136,7 +1035,6 @@ plot(neighbours, coordinates(jtw_driving_akl_SA2_cas_dep_proj_sp), add = TRUE, c
 
 ```
 
-
 ```{r}
 ## Calculate the Rook's case neighbours
 # the parameter `queen', if TRUE a single shared boundary point meets the contiguity condition, if FALSE, more than one share point is required; not that more than shared boundary point does not necessarily mean a shared boundary
@@ -1148,6 +1046,7 @@ plot(jtw_driving_akl_SA2_cas_dep_proj_sp, border = 'lightgrey')
 plot(neighbours, coordinates(jtw_driving_akl_SA2_cas_dep_proj_sp), add = TRUE, col = 'blue', lwd = 2)
 plot(neighbours2, coordinates(jtw_driving_akl_SA2_cas_dep_proj_sp), add = TRUE, col = 'red')
 ```
+
 ##### Removing the islands
 
 ```{r}
@@ -1171,8 +1070,7 @@ plot(neighbours3, coordinates(jtw_driving_akl_SA2_cas_dep_proj_sp_2), add = TRUE
 
 #### ii. Global Autocorrelation
 
-Global spatial autocorrelation
-- focuses on the overall trend in the dataset and tells us if the degree of clustering in the dataset
+Global spatial autocorrelation - focuses on the overall trend in the dataset and tells us if the degree of clustering in the dataset
 
 With the neighbours defined. We can now run a model. First we need to convert the data types of the neighbours object. This file will be used to determine how the neighbours are weighted
 
@@ -1183,10 +1081,9 @@ listw
 
 ```
 
-##### Moran’s test
+##### Moran's test
 
-Moran’s test
-- This will create a correlation score between -1 and 1. Much like a correlation coefficient, 1 determines perfect postive spatial autocorrelation (so our data is clustered), 0 identifies the data is randomly distributed and -1 represents negative spatial autocorrelation (so dissimilar values are next to each other).
+Moran's test - This will create a correlation score between -1 and 1. Much like a correlation coefficient, 1 determines perfect postive spatial autocorrelation (so our data is clustered), 0 identifies the data is randomly distributed and -1 represents negative spatial autocorrelation (so dissimilar values are next to each other).
 
 ```{r}
 
@@ -1199,7 +1096,7 @@ moran.test(jtw_driving_akl_SA2_cas_dep_proj_sp_2$cas_per_SA2_res, listw)
 
 ##### Moran's plot
 
-Both Moran’s I and Moran’s I Scatter plot show positively correlated observations by location in the dataset.
+Both Moran's I and Moran's I Scatter plot show positively correlated observations by location in the dataset.
 
 ```{r}
 
@@ -1212,27 +1109,16 @@ moran <- moran.plot(jtw_driving_akl_SA2_cas_dep_proj_sp_2$cas_per_SA2_res, listw
 ```
 
 #### iii. Local Spatial Autocorrelation
-- looking into spatial variations in the dataset
 
-Local Spatial Autocorrelation
-- using Local Indicators of Spatial Association (LISA) is used to detect clusters spatially
+-   looking into spatial variations in the dataset
 
-LISA classifies areas into four groups:
-1. high values near to high values (HH)
-2. Low values with the nearby low values (LL)
-3. Low values with high values in its neighbourhood and vice versa
+Local Spatial Autocorrelation - using Local Indicators of Spatial Association (LISA) is used to detect clusters spatially
+
+LISA classifies areas into four groups: 1. high values near to high values (HH) 2. Low values with the nearby low values (LL) 3. Low values with high values in its neighbourhood and vice versa
 
 Useful statistics from the model which are as defined:
 
-Name    |    Description
-+-------+-------------------------------------------+
-Ii      | local moran statistic
-E.Ii    | expectation of local moran statistic 
-Var.Ii  | variance of local moran statistic
-Z.Ii    | standard deviate of local moran statistic 
-Pr()    | p-value of local moran statistic
-
-
+Name \| Description +-------+-------------------------------------------+ Ii \| local moran statistic E.Ii \| expectation of local moran statistic Var.Ii \| variance of local moran statistic Z.Ii \| standard deviate of local moran statistic Pr() \| p-value of local moran statistic
 
 ```{r}
 
@@ -1240,7 +1126,6 @@ Pr()    | p-value of local moran statistic
 local <- localmoran(jtw_driving_akl_SA2_cas_dep_proj_sp_2$cas_per_SA2_res,listw = nb2listw(neighbours3, style = "W"))
 
 ```
-
 
 ```{r}
 
@@ -1287,7 +1172,6 @@ quadrant[local[,5]>signif] <- 0
 
 ```
 
-
 ```{r}
 
 # plot in r
@@ -1302,13 +1186,11 @@ legend("bottomleft",legend=c("insignificant","low-low","low-high","high-low","hi
 
 ```
 
-
 ## 3.10 Summary
 
 ```{r}
 
 ```
-
 
 # 5 Results
 
@@ -1316,31 +1198,25 @@ legend("bottomleft",legend=c("insignificant","low-low","low-high","high-low","hi
 
 ## 5.1 Evaluation of Route Simulation by using AT traffic counter
 
-
-
 ## 5.2 Routes
 
 ```{r}
 
 ```
 
-
 ## 5.3 Distance Travelled
 
-Distribution of distance travelled
-We can see that  
+Distribution of distance travelled We can see that
 
 ```{r}
 
 ```
-
 
 Total distance travelled per SA2
 
 ```{r}
 
 ```
-
 
 ## 5.4 Exposure
 
@@ -1352,8 +1228,7 @@ Number of crashes / total distance travelled per SA2
 
 # 6 Conclusion
 
-The report draws convincing conclusions that are clearly related to the
-research problem and supported b the research.
+The report draws convincing conclusions that are clearly related to the research problem and supported b the research.
 
 The report points out relevant and interesting future work.
 
@@ -1377,13 +1252,10 @@ The report points out relevant and interesting future work.
 -   what is the methodology used to collect the data
 -   what analysis statsnz has performed
 -   defined what you want to do with the data
--   what are the high level goals with the data, construct or estimate
-    the routes for all those commutes. Estimate the traffic on those
-    routes that are due to commute.
+-   what are the high level goals with the data, construct or estimate the routes for all those commutes. Estimate the traffic on those routes that are due to commute.
 -   estimate this with the crash sites
 -   how dangerous are potential routes
--   going back to the sources or residence location, how dangerous are
-    there commutes on particular locations (SA2 polygon usual residence)
+-   going back to the sources or residence location, how dangerous are there commutes on particular locations (SA2 polygon usual residence)
 
 ## WHAT
 
@@ -1399,16 +1271,13 @@ The report points out relevant and interesting future work.
 
 -   defined what you want to do with the data
 
--   what are the high level goals with the data, construct or estimate
-    the routes for all those commutes. Estimate the traffic on those
-    routes that are due to commute.
+-   what are the high level goals with the data, construct or estimate the routes for all those commutes. Estimate the traffic on those routes that are due to commute.
 
 -   estimate this with the crash sites
 
 -   how dangerous are potential routes
 
--   going back to the sources or residence location, how dangerous are
-    there commutes on particular locations (SA2 polygon usual residence)
+-   going back to the sources or residence location, how dangerous are there commutes on particular locations (SA2 polygon usual residence)
 
 -   usual residence vs usual work
 
@@ -1416,8 +1285,7 @@ The report points out relevant and interesting future work.
 
     -   play around with alpha/transperency.size
 
--   point out specific junction of roads with high density of traffic
-    and neighbhouring roads to junction with high dense crashes
+-   point out specific junction of roads with high density of traffic and neighbhouring roads to junction with high dense crashes
 
 ## HOW (METHODOLOGY) -show results don't show the code
 
@@ -1427,23 +1295,15 @@ The report points out relevant and interesting future work.
 
 -   go back to your notes with what we've have happened
 
--   result of routing software to get traffic estimates due to
-    estimates, validating the AT traffic count. How far that validation
-    go?
+-   result of routing software to get traffic estimates due to estimates, validating the AT traffic count. How far that validation go?
 
--   there are limitation with Auckland Transport counter, state
-    limitations on the route and AT counter
+-   there are limitation with Auckland Transport counter, state limitations on the route and AT counter
 
--   Overcounting the spatial point on the overpass hitting both routes,
-    the sensor (HIGHLIGTHING the traffic counter and the routes). Even
-    though issues are good estimates for simulating routes
+-   Overcounting the spatial point on the overpass hitting both routes, the sensor (HIGHLIGTHING the traffic counter and the routes). Even though issues are good estimates for simulating routes
 
--   routes vs crash points comparison (how risky the routes), cas points
-    vs distance travelled. plot of distance versus (can add the linear
-    model here) plot the residuals
+-   routes vs crash points comparison (how risky the routes), cas points vs distance travelled. plot of distance versus (can add the linear model here) plot the residuals
 
--   computing the normalised risk per SA2 (spatial distribution of
-    riskiness)
+-   computing the normalised risk per SA2 (spatial distribution of riskiness)
 
 -   no need to discuss with the outlier if u can't explain
 
@@ -1457,28 +1317,19 @@ Talk about the autocorrelation - spatial areas
 -   give the code and explanation
 -   method used
 
-Limitations - censoring of the data in MB. Use this in MB - issue with
-SA2 centroids and ends, the solution is samplinga nd computational
-feasible and go down to MB and used the sampling for distribution.
+Limitations - censoring of the data in MB. Use this in MB - issue with SA2 centroids and ends, the solution is samplinga nd computational feasible and go down to MB and used the sampling for distribution.
 
--   fix the route, if we push a point it will pick a different route
-    (TALK ABOUT THIS IN THE FIRST SECTION). We have to estimate the
-    route and we get the route.
+-   fix the route, if we push a point it will pick a different route (TALK ABOUT THIS IN THE FIRST SECTION). We have to estimate the route and we get the route.
 
--   we could try higher or more routes and future direction. we need to
-    improve it.
+-   we could try higher or more routes and future direction. we need to improve it.
 
--   These are estimates and can be addressed in the future. We are not
-    changing the weights.
+-   These are estimates and can be addressed in the future. We are not changing the weights.
 
 -   there is a big effect of the traffic counter
 
 -   number of people in the car.
 
-+++++++++++++++ - draw the spatial deprivation index - compare distance
-vs time travelled (account for this SA2 source) - Simon hypothesis there
-shouldn't be any significant difference
-
++++++++++++++++ - draw the spatial deprivation index - compare distance vs time travelled (account for this SA2 source) - Simon hypothesis there shouldn't be any significant difference
 
 # Adding Figure Captions
 
@@ -1491,4 +1342,3 @@ plot(runif(100, 0.0, 1.0),type="l")
 ```
 
 in Figure \ref{fig:figs} we see examples of plotting in R.
-
