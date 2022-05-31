@@ -57,7 +57,6 @@ trafficalmr open source project (in R) - an initiative from the UK that seeks to
 
 ## 1.5 Overview of Approach
 
-
 ## 1.6 Scope & Structure
 
 -   The scope of the research is
@@ -81,7 +80,6 @@ for commuters that are travelling from their usual residence to work
 Wanted to set the scene on the relevance of road safety, how New Zealand's road safety measure compared to other countries.
 
 ## 2.1 Road Safety
-
 
 ## 2.2 Policies on Road Safety
 
@@ -118,12 +116,19 @@ Wanted to set the scene on the relevance of road safety, how New Zealand's road 
 
 ## 4.3 Datasets and Processing the Data
 
-```{r}
+```{r include=FALSE}
+
+#Set options for the entire document in the first chunk.
+
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, include = FALSE)
+```
+
+```{r, echo=FALSE, warning = FALSE}
 # libraries required
 
 library(sf)
 library(ghroute)
-router(osm.file = "~/Documents/University of Auckland/COMPSCI 791 Research Project/mot_road_safety_project/osm/new-zealand-latest.osm.pbf")
+router(osm.file = "osm/new-zealand-latest.osm.pbf")
 library(leaflet)
 library(mapview)
 library(readxl)
@@ -138,8 +143,8 @@ library(grid) # display side by side plot
 
 # Datasets from the package
 
-readRDS("data/jtw_driving_akl.rds")
-readRDS("data/sa2_clipped_geo_akl.rds")
+jtw_driving_akl <- readRDS("data/jtw_driving_akl.rds")
+sa2_clipped_geo_akl <- readRDS("data/sa2_clipped_geo_akl.rds")
 
 ```
 
@@ -150,6 +155,8 @@ readRDS("data/sa2_clipped_geo_akl.rds")
  #          sheet = "Geographic Key")
 
 #saveRDS(key, "data/key.rds")
+
+key <- readRDS("data/key.rds")
 
 ## need to change data type of MBs so we can join it with df
 key$MB2018_V1_00 <- as.character(key$MB2018_V1_00)
@@ -197,36 +204,36 @@ The JTW data was collected prior to the covid pandemic. According to X since the
 # tidying up values
 jtw_driving_akl[jtw_driving_akl == -999] <- 0
 
-jtw_driving_akl$total_driving <-  jtw_driving_akl$Drive_a_company_car_truck_or_van +
+jtw_driving_akl$total_driving_travellers <-  jtw_driving_akl$Drive_a_company_car_truck_or_van +
   jtw_driving_akl$Drive_a_private_car_truck_or_van
 
-#sum(jtw_driving_akl$total_driving)
+#sum(jtw_driving_akl$total_driving_travellers)
 #class(sa2_clipped_geo_akl)
 
 # usual residence
 sa2_usual_res_driving <- sa2_clipped_geo_akl[c("SA22021_V1", "SA22021__1",  "geometry")] %>% 
   mutate(SA22021_V1 = as.integer(SA22021_V1)) %>% 
-  right_join(jtw_driving_akl[c("SA2_code_usual_residence_address", "total_driving")], by = c("SA22021_V1" = "SA2_code_usual_residence_address")) %>% 
+  right_join(jtw_driving_akl[c("SA2_code_usual_residence_address", "total_driving_travellers")], by = c("SA22021_V1" = "SA2_code_usual_residence_address")) %>% 
   group_by(SA22021_V1, SA22021__1) %>% 
-  summarise(`Total Driving` = sum(total_driving))
+  summarise(`Total Driving` = sum(total_driving_travellers))
 
 # usual workplace
 sa2_work_driving <- sa2_clipped_geo_akl[c("SA22021_V1", "SA22021__1",  "geometry")] %>% 
   mutate(SA22021_V1 = as.integer(SA22021_V1)) %>% 
-  right_join(jtw_driving_akl[c("SA2_code_workplace_address", "total_driving")], by = c("SA22021_V1" = "SA2_code_workplace_address")) %>% 
+  right_join(jtw_driving_akl[c("SA2_code_workplace_address", "total_driving_travellers")], by = c("SA22021_V1" = "SA2_code_workplace_address")) %>% 
   group_by(SA22021_V1, SA22021__1) %>% 
-  summarise(`Total Driving` = sum(total_driving)) 
+  summarise(`Total Driving` = sum(total_driving_travellers)) 
  
 ## plotting sa2_usual_res_driving
 p1 <- tm_shape(sa2_usual_res_driving) +
   tm_polygons(col = "Total Driving", lwd = 0.0001) +
-    tm_layout(panel.labels = c("Auckland, NZ Usual Residence (2018)"), panel.label.size = 0.5)
+    tm_layout(panel.labels = c("Auckland, NZ Usual Residence (2018)")) #, panel.label.size = 0.5)
 
 
 ## plotting sa2_usual_res_driving
 p2 <- tm_shape(sa2_work_driving) +
   tm_polygons(col = "Total Driving", lwd = 0.0001) +
-  tm_layout(panel.labels = c("Auckland, NZ Workplace (2018)"), panel.label.size = 0.5) 
+  tm_layout(panel.labels = c("Auckland, NZ Workplace (2018)")) #, panel.label.size = 0.5) 
 
   
 ######
@@ -245,26 +252,25 @@ p2 <- tm_shape(sa2_work_driving) +
   #          panel.label.size = 0.5) 
 
   
-#sum(jtw_driving_akl$total_driving )
-#sum(sa2_usual_res_driving$total_driving)
-#sum(sa2_work_driving$total_driving)
+#sum(jtw_driving_akl$total_driving_travellers )
+#sum(sa2_usual_res_driving$total_driving_travellers)
+#sum(sa2_work_driving$total_driving_travellers)
 
 
 
 ```
 
-```{r}
-
-mapview(sa2_work_driving, zcol = "Total Driving")
+```{r res_vs_work, echo = FALSE, warning = FALSE,fig.cap = "Comparing Statistica Area 2" }
+tmap_arrange(p1, p2, nrow = 1)
 
 ```
 
 ```{r figs1, echo = FALSE, warning = FALSE, fig.align = "middle", fig.width=7,fig.height=6,fig.cap="\\label{fig:figs1}Figure: Usual Residence vs Workpalce "}
 
-grid.newpage()
-pushViewport(viewport(layout=grid.layout(1,2)))
-print(p1, vp=viewport(layout.pos.col = 1))
-print(p2, vp=viewport(layout.pos.col = 2))
+#grid.newpage()
+#pushViewport(viewport(layout=grid.layout(1,2)))
+#print(p1, vp=viewport(layout.pos.col = 1), asp =  1:5)
+#print(p2, vp=viewport(layout.pos.col = 2), asp =  2:5)
 
 
 
@@ -280,7 +286,7 @@ In Figure 1, notice that the usual residence (left plot) plot has the usual resi
 
 ### b. CAS data
 
-```{r}
+```{r, echo = FALSE, warning = FALSE}
 
 ## CAS data
 cas_data <- readRDS("data/Crash_Analysis_System_(CAS)_data.rds")
@@ -288,7 +294,7 @@ cas_data <- readRDS("data/Crash_Analysis_System_(CAS)_data.rds")
 ## create a new column called non_injury_crash
 cas_data$non_injury_crash <- ifelse(cas_data$crashSeverity == 'Non-Injury Crash', 1, 0)
 
-table(cas_data$crashSeverity)
+#table(cas_data$crashSeverity)
 
 ## total crashes
 cas_data$total <- rowSums(cas_data[c("fatalCount", "minorInjuryCount", "seriousInjuryCount",  "non_injury_crash")], na.rm = TRUE)
@@ -310,13 +316,10 @@ cas_data_akl_2018_geo <-  cas_data_akl_geo[(cas_data_akl_geo$crashYear == 2018 &
 
 
 
-
-
 ```
 
-```{r echo = FALSE}
+```{r echo = FALSE, warning = FALSE}
 #insert crashes over time by type of crashes
-
 
 cas_data_per_year <- cas_data %>% 
   group_by(crashYear, crashSeverity) %>% 
@@ -342,11 +345,20 @@ ggplot(cas_data_per_year, aes(x = crashYear, y = Total)) +
 
 ```
 
+Figure
+
+![](plot/crash_points2.png)
+
+*Figure 1. Crash points*
+
 ```{r}
-#mapview(st_geometry(cas_data_akl_geo[cas_data_akl_geo$crashSeverity != "Non-Injury Crash", ])[1:1000], 
-#        alpha = 0.05,  
-#        alpha.regions = 0.05, 
-#        layer.name = "Injury Crash for all crash years",
+
+#Plotting all crash points for all years and all crash severity except where crash severity is non-injury
+
+#mapview(st_geometry(cas_data_akl_geo[cas_data_akl_geo$crashSeverity != "Non-Injury Crash", ]), 
+#       alpha = 0,  
+#      alpha.regions = 0.05, 
+#       layer.name = "Injury Crash for all crash years",
 #        cex = 2) #change alpha from 0.1 to 0.05
 ```
 
@@ -413,6 +425,48 @@ For further information see ANZLIC Metadata 2018 Statistical Area 2 attachment b
 Please note that a review of SA2 names was undertaken in early 2018. The review addressed issues with inconsistent naming and applied corrections, resulting in an update to this dataset applied in May 2018. All SA2 codes are unchanged.
 
 ### d. Auckland Traffic Counter
+
+Auckland Traffic Counter data is available in Aucklant Transport data. The data contains traffic from x year.
+
+```{r}
+
+#loading AT traffic counter data
+
+#at_traffic_count <- 
+#read_xlsx("../data/at-website-traffic-counts-2012-2021.xlsx", 
+#           sheet = "July 2012 to May 2021",
+#          skip = 1)
+
+#at_traffic_count$year = format(at_traffic_count$`Count Start Date`, format = "%Y")
+
+#saveRDS(at_traffic_count, "data/at_traffic_count.rds")
+
+at_traffic_count <- readRDS("data/at_traffic_count.rds")
+
+## we are only interested traffic at 2018
+#at_traffic_count_2018 <- at_traffic_count[at_traffic_count$year == 2018 &
+#                                          !(is.na(at_traffic_count$`Description (location of traffic count)`)), ]
+
+## we need the coordinates, thus extracting easting and northing from directions column
+
+#at_traffic_count_2018$Easting <- substr(at_traffic_count_2018$`Description (location of traffic count)`, 2, 8)
+
+#at_traffic_count_2018$Northing <- substr(at_traffic_count_2018$`Description (location of traffic count)`, 12, 18)
+
+## need to set up coordinates, projected
+#at_traffic_count_2018_proj <- st_as_sf(at_traffic_count_2018, coords = c("Easting", "Northing"), crs = 2193)
+
+##transform coordinates  
+#at_traffic_count_2018_geo <- st_transform(at_traffic_count_2018_proj, crs = 4326)
+
+at_traffic_count_2018_proj <- readRDS("artefacts/at_traffic_count_2018_proj.rds")
+
+at_traffic_count_2018_geo <- readRDS("artefacts/at_traffic_count_2018_proj.rds")
+
+mapview(at_traffic_count_2018_geo, alpha = 0.01, 
+        layer.name = "Auckland Traffic Counters", cex = 2)
+
+```
 
 ```{r}
 # insert the radius or distance between the traffic counter and the route
@@ -611,27 +665,35 @@ The below figure represents all the routes for all the routes where the commuter
 
 ```{r, warning=FALSE, echo = FALSE}
 
-## getting the total driving commuters and creating a new column
-jtw_driving_akl$total_driving_travellers <- 
-  ifelse(jtw_driving_akl$Drive_a_company_car_truck_or_van >0, jtw_driving_akl$Drive_a_company_car_truck_or_van, 0) +
-  ifelse(jtw_driving_akl$Drive_a_private_car_truck_or_van >0, jtw_driving_akl$Drive_a_private_car_truck_or_van, 0) 
-
 ##running get_routes
-jtw_akl_routes <- get_routes(as.matrix(jtw_driving_akl[names(jtw_driving_akl)[21:24]]))
+#jtw_akl_routes <- get_routes(as.matrix(jtw_driving_akl[names(jtw_driving_akl)[21:24]]))
 
 ##selecting only important column
-jtw_driving_akl_2 <- jtw_driving_akl[c(1:8, 25)]
+#jtw_driving_akl_2 <- jtw_driving_akl[c(1:8, 25)]
 
 ## adding routes to data
-jtw_driving_akl_with_routes <- cbind(jtw_akl_routes, jtw_driving_akl_2)
+#jtw_driving_akl_with_routes <- cbind(jtw_akl_routes, jtw_driving_akl_2)
+
+#saveRDS(jtw_driving_akl_with_routes, "artefacts/jtw_driving_akl_with_routes.rds")
+
+jtw_driving_akl_with_routes <- readRDS("artefacts/jtw_driving_akl_with_routes.rds")
 
 ```
 
 ```{r}
-mapview(jtw_driving_akl_with_routes[1:20, ], 
-        layer.name = "Auckland Driving Commutes")
+
+#mapview(jtw_driving_akl_with_routes, 
+#        layer.name = "Auckland Driving Commutes", 
+#        alpha = 0.01
+#        )
 
 ```
+
+![](plot/Simulating_Routes_Plot.png)
+
+*Figure All routes simulated by the router*
+
+In the above figure, notice that majority of the routes are using in the motorway, while less routes are used on arterial roads which makes sense
 
 ## 3.5 Getting the Distance Travelled (Exposure)
 
@@ -649,20 +711,42 @@ The function mainly uses the sf st_intersection() function to determine the rout
 
 jtw_driving_akl_with_routes_proj <- st_transform(jtw_driving_akl_with_routes, crs = 2193)
 
-sa2_clipped_proj_akl <- 
-  st_transform(sa2_clipped_geo_akl, crs  = 2193)
+sa2_clipped_proj_akl <- st_transform(sa2_clipped_geo_akl, crs  = 2193)
 
-dist_travel <- get_dist_travel(sa2_clipped_proj_akl, jtw_driving_akl_with_routes_proj[1:100, ],
-jtw_driving_akl_with_routes_proj[1:100, ]$total_driving)
+akl_dist_travel <- get_dist_travel(sa2_clipped_proj_akl, jtw_driving_akl_with_routes_proj,
+jtw_driving_akl_with_routes_proj$total_driving)
 
+#saveRDS(akl_dist_travel, "artefacts/akl_dist_travel")
 
-dist_travel[!is.na(dist_travel$total_dist), ]
-
+akl_dist_travel <- readRDS("artefacts/akl_dist_travel")
 
 ##########################
 
- 
+
+mapview(akl_dist_travel %>% mutate(total_dist = (total_dist/1000)), zcol = "total_dist")
+
+
+sum(is.na(akl_dist_travel$total_dist))
+
+akl_dist_travel[is.na(akl_dist_travel$total_dist), ]
+
+test[!is.na(test$total_dist), ]
+
+
 ```
+
+```{r}
+
+tm_shape(akl_dist_travel %>% mutate(`Total Distance Travelled per SA2` = as.numeric(total_dist/1000))) +
+  tm_polygons(col = "Total Distance Travelled per SA2", lwd = 0.0001) +
+    tm_layout(panel.labels = c("Auckland, NZ Usual Residence (2018)"), legend.outside = TRUE)
+
+
+
+
+```
+
+In the above figure, notice that SA2 polygons with the most travelled are the same polygons where people tend to go for work.
 
 ## 3.6 Risk
 
@@ -670,21 +754,16 @@ dist_travel[!is.na(dist_travel$total_dist), ]
 
 `((CAS for 5 years data filtered during peak period / 2 journey)  / 5 years / 261 days)` / `exposure (distance traveled)`
 
- (cas 2018/2 journey) / 
- 
- 
- - put a buffer in the polygon, 10 meters to capture the crash points
- - 5 meters and try as well
- 
- +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 
+(cas 2018/2 journey) /
+
+-   put a buffer in the polygon, 10 meters to capture the crash points
+-   5 meters and try as well
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 Risk is calculated as the total number of crashes in a given SA2 divided by the distance travelled that intersected in that SA2.
 
-Buffers are polygons representing the area within a given distance of a geometric feature: regardless of whether the input is a point, line or polygon, the ouput is a polygon.
-Un
-(Geocomputation Robin Lovelace)
-
-
+Buffers are polygons representing the area within a given distance of a geometric feature: regardless of whether the input is a point, line or polygon, the ouput is a polygon. Un (Geocomputation Robin Lovelace)
 
 ```{r}
 
@@ -719,8 +798,6 @@ mapview(sa2_clipped_proj_akl %>% mutate(total_serious_cas = fatal_crashes + seri
 
 ```
 
-
-
 ```{r}
 
 risk_output <- get_risk(st_coordinates(cas_data_akl_2018_proj)[, "X"], st_coordinates(cas_data_akl_2018_proj)[, "Y"], cas_data_akl_2018_proj$seriousInjuryCount + cas_data_akl_2018_proj$fatalCount, sa2_clipped_proj_akl)
@@ -752,6 +829,30 @@ cas
 
 ```
 
+```{r}
+#FINAL
+
+cas_data_akl_2018_proj 
+
+str(akl_dist_travel)
+
+
+get_risk(st_coordinates(cas_data_akl_2018_proj)[, "X"], 
+         st_coordinates(cas_data_akl_2018_proj)[, "Y"], 
+         cas_data_akl_2018_proj$seriousInjuryCount + cas_data_akl_2018_proj$fatalCount,
+         akl_dist_travel)
+
+cbind(cas_data_akl_proj, cas_data_akl_proj$seriousInjuryCount)
+
+
+risk_proj <-  get_risk(cas_data_akl_2018_proj['geometry'], cas_data_akl_2018_proj$seriousInjuryCount + cas_data_akl_2018_proj$fatalCount, akl_dist_travel)
+
+risk_proj$ksi_bkm <- as.numeric(risk_proj$risk * 1000000000000)
+
+mapview(risk_proj, zcol = "ksi_bkm")
+
+```
+
 ## 3.7 Route Riskiness
 
 route_risk() function calculates the total crash a route encounters for a given radius. The default radius is 5 meters but this can be modified.
@@ -764,34 +865,21 @@ All model assumptions look satisfied once we added the quadratic term to the lin
 
 **(Should we use poisson as we are predicting counts data)**\*
 
+![](plot/risky_routes.png)
+
 ```{r}
 
-mapview(jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$SA2_name_usual_residence_address == 'Pukekohe Central', ], 
-        layer.name = "Pukekohe Central to Shortland St Route",
-        cex = 6) +
+#plotting risky route outlier
 
+#mapview(jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$SA2_name_usual_residence_address == 'Pukekohe Central', ], layer.name = "Pukekohe Central to Shortland St Route", cex = 6) +
 
-mapview(cas_data_akl_2018_geo[st_is_within_distance(cas_data_akl_2018_geo, 
-jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$SA2_name_usual_residence_address == 'Pukekohe Central', ], 
-                      dist = 5,
-                      sparse = FALSE), ], 
-col.regions = 'red', 
-alpha = 0.1,
-alpha.regions = 0.3,
-cex = 2, 
-layer.name = "2018 Crash Points")
+# mapview(cas_data_akl_2018_geo[st_is_within_distance(cas_data_akl_2018_geo, jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$SA2_name_usual_residence_address == 'Pukekohe Central', ], dist = 5, sparse = FALSE), ], col.regions = 'red', alpha = 0.1,alpha.regions = 0.3, cex = 2, layer.name = "2018 Crash Points")
 
 # 431 crashes
-nrow(cas_data_akl_2018_geo[st_is_within_distance(cas_data_akl_2018_geo, 
-jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$SA2_name_usual_residence_address == 'Pukekohe Central', ], 
-                      dist = 5,
-                      sparse = FALSE), ])
-
-```
-
-```{r}
-
-
+#nrow(cas_data_akl_2018_geo[st_is_within_distance(cas_data_akl_2018_geo, 
+#jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$SA2_name_usual_residence_address == 'Pukekohe Central', ], 
+#                      dist = 5,
+#                      sparse = FALSE), ])
 
 ```
 
@@ -800,10 +888,10 @@ jtw_driving_akl_with_routes[jtw_driving_akl_with_routes$SA2_name_usual_residence
 cas_data_akl_2018_proj <- st_transform(cas_data_akl_2018_geo, crs = 2193)
 
 ## calculating the riskiness of the route
-route_riskiness_d_proj <- route_risk(jtw_driving_akl_with_routes_proj, 
-                                cas_data_akl_2018_proj)
+#route_riskiness_d_proj <- route_risk(jtw_driving_akl_with_routes_proj, cas_data_akl_2018_proj)
 
-
+#saving artefacts
+#saveRDS(route_riskiness_d_proj, "artefacts/route_riskiness_d_proj")
 
 
 ```
@@ -820,7 +908,6 @@ route_riskiness_d_proj$total_traveler_times_cas <-
   route_riskiness_d_proj$crash_within_5m * route_riskiness_d_proj$total_driving
 
 
-
 jtw_driving_akl_SA2_cas_dep <-  st_drop_geometry(route_riskiness_d_proj[!st_is_empty(route_riskiness_d_proj), ]) %>%
   group_by(SA2_code_usual_residence_address, SA2_name_usual_residence_address) %>% 
   summarise(total_cas_SA2_source = sum(crash_within_5m), 
@@ -832,7 +919,6 @@ jtw_driving_akl_SA2_cas_dep <-  st_drop_geometry(route_riskiness_d_proj[!st_is_e
 jtw_driving_akl_SA2_cas_dep <- st_sf(jtw_driving_akl_SA2_cas_dep[!names(jtw_driving_akl_SA2_cas_dep) %in% c("geometry")], geometry = jtw_driving_akl_SA2_cas_dep$geometry)
 
 mapview(jtw_driving_akl_SA2_cas_dep, zcol = "total_traveler_times_cas")
-
 
 summary(route_riskiness_d_proj$total_traveler_times_cas )
 
@@ -861,97 +947,90 @@ The method we use is for each traffic counter to compare the total total vehicle
 
 With 20 meters as the radius to measure to measure the distance between the commuter route and traffic counter, we have identified that approximately 30% (651 of 2331 traffic counter) the traffic counter is not within 20 meters radius from a given route. This is attributed to the fact that our source and destination are SA2 polygons, which means that we might have not all possible routes in Auckland.
 
-```{r}
-
-at_traffic_count <- 
-read_xlsx("../data/at-website-traffic-counts-2012-2021.xlsx", 
-           sheet = "July 2012 to May 2021",
-          skip = 1)
-
-at_traffic_count$year = format(at_traffic_count$`Count Start Date`, format = "%Y")
-
-## we are only interested traffic at 2018
-at_traffic_count_2018 <- at_traffic_count[at_traffic_count$year == 2018 &
-                                          !(is.na(at_traffic_count$`Description (location of traffic count)`)), ]
-
-## we need the coordinates, thus extracting easting and northing from directions column
-at_traffic_count_2018$Easting <- substr(at_traffic_count_2018$`Description (location of traffic count)`, 2, 8)
-
-at_traffic_count_2018$Northing <- substr(at_traffic_count_2018$`Description (location of traffic count)`, 12, 18)
-
-## need to set up coordinates, projected
-at_traffic_count_2018_proj <- st_as_sf(at_traffic_count_2018, coords = c("Easting", "Northing"), crs = 2193)
-
-##transform coordinates  
-at_traffic_count_2018_geo <- st_transform(at_traffic_count_2018_proj, crs = 4326)
-
-
-```
-
 Comparing 10 meters vs 15 meters vs 20 meters radius - it seems that 20 meters captures more signal compared to 10m and 15m as indicated below
 
-`20 meters` - green `15 meters` - purple `10 meters` - yellow
+`20 meters` - green `15 meters` - purple `10 meters` - red
 
-```{r}
+```{r, echo = FALSE}
 ## route 1488
-    leaflet()%>% 
-   addTiles() %>% 
-  leafem::addMouseCoordinates() %>% 
-    addPolylines(data = st_geometry(st_transform(jtw_driving_akl_with_routes_proj[st_is_within_distance(jtw_driving_akl_with_routes_proj,
-                      at_traffic_count_2018_proj[1488, ],
-                      dist = 20, 
-                      sparse = FALSE) &
-  !st_is_empty(jtw_driving_akl_with_routes_proj), ], crs = 4326))) %>% 
-          addCircles( lat = st_coordinates(st_transform(at_traffic_count_2018_proj[1488, ], 
-                                                        crs = 4326))[1, "Y"], 
-                  lng = st_coordinates(st_transform(at_traffic_count_2018_proj[1488, ], 
-                                                    crs = 4326))[1, "X"],
-                  col = 'green', 
-                  radius = 20) %>% 
-                addCircles( lat = st_coordinates(st_transform(at_traffic_count_2018_proj[1488, ], 
-                                                        crs = 4326))[1, "Y"], 
-                  lng = st_coordinates(st_transform(at_traffic_count_2018_proj[1488, ], 
-                                                    crs = 4326))[1, "X"],
-                  col = 'purple', 
-                  radius = 15) %>% 
-                addCircles( lat = st_coordinates(st_transform(at_traffic_count_2018_proj[1488, ], 
-                                                        crs = 4326))[1, "Y"], 
-                  lng = st_coordinates(st_transform(at_traffic_count_2018_proj[1488, ], 
-                                                    crs = 4326))[1, "X"],
-                  col = 'yellow', 
-                  radius = 10) %>% 
-    addCircles(data = st_geometry(at_traffic_count_2018_geo[1488, ]), color = "red")
+  #leaflet()%>% 
+  #addTiles() %>% 
+  #leafem::addMouseCoordinates() %>% 
+    #addPolylines(data = st_geometry(st_transform(jtw_driving_akl_with_routes_proj[st_is_within_distance(jtw_driving_akl_with_routes_proj,
+    #                 at_traffic_count_2018_proj[1488, ],
+    #                  dist = 20, 
+    #                  sparse = FALSE) &
+  #!st_is_empty(jtw_driving_akl_with_routes_proj), ], crs = 4326))) %>% 
+   #       addCircles( lat = st_coordinates(st_transform(at_traffic_count_2018_proj[1488, ], 
+    #                                                    crs = 4326))[1, "Y"], 
+    #              lng = st_coordinates(st_transform(at_traffic_count_2018_proj[1488, ], 
+    #                                                crs = 4326))[1, "X"],
+    #              col = 'green', 
+    #              radius = 20) %>% 
+    #            addCircles( lat = st_coordinates(st_transform(at_traffic_count_2018_proj[1488, ], 
+    #                                                    crs = 4326))[1, "Y"], 
+    #              lng = st_coordinates(st_transform(at_traffic_count_2018_proj[1488, ], 
+    #                                                crs = 4326))[1, "X"],
+    #              col = 'purple', 
+    #              radius = 15) %>% 
+    #            addCircles( lat = st_coordinates(st_transform(at_traffic_count_2018_proj[1488, ], 
+    #                                                    crs = 4326))[1, "Y"], 
+    #              lng = st_coordinates(st_transform(at_traffic_count_2018_proj[1488, ], 
+    #                                                crs = 4326))[1, "X"],
+    #              col = 'yellow', 
+    #              radius = 10) %>% 
+    # addCircles(data = st_geometry(at_traffic_count_2018_geo[1488, ]), color = "red")
 
 
+
+```
+
+![Figure Various Radius to intersect route](plot/Akl_Traffic_Counter.png)
+
+```{r}
+
+## counting number of routes within 20m of a traffic counter to validate routes generated
+
+## this only counts individual routes, need to multiply by the number of commuters
+#at_traffic_count_2018_proj$route_within_20m <- #lengths(st_is_within_distance(at_traffic_count_2018_proj,
+#                      jtw_driving_akl_with_routes_proj[(!st_is_empty(jtw_driving_akl_with_routes_proj)), ],
+#                      dist = 20))
+
+## number of traffic counters with no route
+#sum(at_traffic_count_2018_proj$route_within_20m == 0) #651
+
+## total 2018 traffic counter in auckland
+#length(at_traffic_count_2018_proj$route_within_20m) #2331
+
+#30% of the traffic counter doesn't have any routes 
+
+mapview(at_traffic_count_2018_proj[at_traffic_count_2018_proj$route_within_20m == 0, ], 
+        layer.name = "Traffic counter with no routes within 20m",
+        col.regions = "red", cex = 2 ) +
+  mapview(jtw_driving_akl_with_routes_proj, layer.name = "JTW Auckland Routes")
+
+#saveRDS(at_traffic_count_2018_proj, "artefacts/at_traffic_count_2018_proj.rds")
+
+#saveRDS(at_traffic_count_2018_geo, "artefacts/at_traffic_count_2018_geo.rds")
 
 ```
 
 ```{r}
 
-## coordinates bounding box
-#https://gis.stackexchange.com/questions/310485/how-to-i-limit-the-x-and-y-axes-with-tmap-in-r
-
-lng: 174.79880
-lat: -36.85186
-
-lng: 174.80646
-lat: -36.85504
-
-tm_shape(World, bbox=tmaptools::bb(matrix(c(0,0,2000000,2000000),2,2))) +tm_polygons()
-
-tm_shape(World, bbox=tmaptools::bb(matrix(c(174.79880,174.80646,-36.85186,-36.85504),2,2))) +tm_polygons()
+#mapview(at_traffic_count_2018_proj[at_traffic_count_2018_proj$route_within_20m == 0, ], 
+#        layer.name = "Traffic counter with no routes within 20m",
+#        col = "red",
+#        col.regions = "red", cex = 2 ) +
+#  mapview(jtw_driving_akl_with_routes_proj, 
+#          layer.name = "Auckland Driving Commutes")
+          #alpha = 0.01)
 
 
-tmap_mode("plot")
-tm_tiles(leaflet::providers$OpenStreetMap)
 
-
-osmap(cache.dir="tmp/osm")
-
-st_crs(World)
 
 ```
 
+![](plot/Auckland%20Traffic%20Counter%20with%20no%20routes.png)
 
 ## 3.9 Autocorrelation
 
@@ -1215,6 +1294,7 @@ Distribution of distance travelled We can see that
 Total distance travelled per SA2
 
 ```{r}
+
 
 ```
 
