@@ -175,27 +175,11 @@ key_2 <- key[, c(3,8)] %>%
 
 ### a. Journey to work data
 
-<https://datafinder.stats.govt.nz/table/104720-2018-census-main-means-of-travel-to-work-by-statistical-area-2/>
+The 2018 census main means of travel to work data is used to derive the journey made by drivers who are 15 years old and over from their usual residence to their place of work through the 2018 census. Data for this study included every unique journey made by a driver of a car, truck or van, either private or company to estimate the commuter's road safety exposure through the distance it has driven. The usual residence and workplace locations are the centroids of 2018 Statistical Area 2 New Zealand geographic boundaries (SA2) [1]. Auckland Transport has also used this dataset, the organisation responsible for all transport services in the Auckland region, to understand travel patterns. The key findings from their analysis are increasing public transport uptake, increasing walking and cycling in the Central areas and driving being the primary mode of transport to work, especially in the outer urban area [2].
 
-The 2018 Census commuter view dataset contains the employed census usually resident population count aged 15 years and over by Statistical area 2 for the main means of travel to work variable from the 2018 census. The geography corresponds to 2018 boundaries.
+This study focuses on drivers whose usual residence is in the Auckland region (41% of trips, n = 16,035). In figure 1, notice that the usual residence spatial polygons are dispersed in the Auckland region. At the same time, the workplace is concentrated in specific areas such as Penrose, Auckland Airport, Middlemore, Takapuna Central and Parnell West. This means that drivers typically drive from various areas in Auckland to particular areas for their workplace. The centroids of the SA2 units represent the coordinates of both the usual residence and workplace used to estimate the total distance traveled for each unique trip using the ghroute package.
 
-This dataset is the base data for the 'there and back again: **our daily commute competition**. - look this up
-
-This 2018 Census commuter view dataset is displayed by Statistical area2 geography and contains from-to (journey) information on an individual's usual residence and workplace address\* by main means of travel to work.
-
--   Workplace address is coded from information supplied by respondents about their workplaces. Where respondents do not supply sufficient information, their responses are coded to 'not further defined'. The 2018 Census commuter view datasets excludes these 'not further defined' areas, as such the sume of the counts for each region in this dataset may not be equal to the total employed census usually resident population count aged 15 years and over for that region.
-
-The data uses fixed random rounding to protect confidentiality. Counts of less than 6 are suppressed according to 2018 confidentiality rules. Values of -999 indicate supressed data.
-
-Data quality ratings for 2018 Census variables, summarising the quality rating and priority levels for 2018 Census variables, are available.
-
-using JTW data
-
-<https://at.govt.nz/about-us/reports-publications/2018-census/>
-
-Auckland Transport is the organisation responsible for all transport services (excluding state highways) from roads and footpaths, to cycling parking and public transport in the Auckland Region. It used the Journey to Work data (JTW) to understand travel patterns within the Auckland region, accounting for much of the movement during peak times. The key finding from the 2018 Census are continued high car share with the highest car use in the Outer Urban area, increased public transport uptake, increasing walking and cycling in Central areas.
-
-The JTW data was collected prior to the covid pandemic. According to X since the pandemic the number of commuters have significantly dropped. As the workforce environment has change where working from home has become an option more people have been working from.
+The outliers (journey from usual residence to the workplace is greater than or equal to 600 km; 0.01% of all the drivers or 0.02% of all unique car trips) in the dataset is excluded from the analysis. A total of 16,031 trips were made by 293,382 drivers whose usual residence is in Auckland Region.
 
 ```{r, echo = FALSE, warning = FALSE}
 
@@ -286,6 +270,14 @@ In Figure 1, notice that the usual residence (left plot) plot has the usual resi
 
 ### b. CAS data
 
+The crash data is sourced from the Waka Kotahi Crash Analysis System (CAS), which records all road traffic crash reported to the New Zealand Police to analyse road safety risk. Various organisations use CAS data with the broad aim of improving road safety [3]. For example, the New Zealand government uses the CAS data to support the adoption of the 'Road to Zero' strategy. The vision of the said strategy is that no one is killed or seriously in road crashes and that there are no deaths or serious injuries while travelling on New Zealand roads. The data has also facilitated transportation policy, designing and prioritising road safety improvements and monitoring their effectiveness [4].
+
+This study is interested in crashes that occurred in 2018 in alignment with the 2018 census main means to travel to work data where trips made by drivers occurred in 2018. According to Waka Kotahi, non-injury crashes are vastly underreported [3]; however, it is used in this study to analyse the risk exposure for each unique journey made by the driver. The projection coordinates in the CAS data are used to determine the specific location of the crash and were used to analyse if the crash has intersected with the journey made by the driver given a particular distance.
+
+Figure 2 is a time series plot that shows the trend of the total number of crashes for each crash year by crash severity. As mentioned earlier, minor crashes and non-injury crashes are the predominant type of crashes reported in CAS data. From the plot, you can notice that around 2013, there was a dip in crashes and 2018, there was a peak of crashes reported for all crash severity.
+
+Injury crashes typically occur at road junctions, as seen in figure 3. It is apparent that the road junctions have a high density of crashes. It is also noticeable in figure 3 that busy roads such as the North-western motorway and Southern motorway have high-density crashes; these are some insights that need to be considered in the road safety analysis.
+
 ```{r, echo = FALSE, warning = FALSE}
 
 ## CAS data
@@ -345,13 +337,13 @@ ggplot(cas_data_per_year, aes(x = crashYear, y = Total)) +
 
 ```
 
-Figure
+*Figure 2: Time series plot of total number of crashes per year by crash severity*
 
 ![](plot/crash_points2.png)
 
 ![](plot/cas%20data%20black%20and%20red%20plot.png)
 
-*Figure 1. Crash points*
+*Figure 2. Red points are all non-injury crashes from 2018 to 2021.*
 
 ```{r}
 
@@ -367,71 +359,31 @@ Figure
 
 ```
 
-<https://www.nzta.govt.nz/safety/partners/crash-analysis-system/>
+### c. Statistical Area 2 Polygons
 
-<https://www.transport.govt.nz/area-of-interest/safety/road-to-zero/>
-
-<https://www.transport.govt.nz/assets/Uploads/MOT-3833-Road-to-Zero_Annual-Monitoring-Report-2020_FA4_WEB.pdf>
-
-+++++++++++++++++++++++++
-
-<https://www.arcgis.com/sharing/rest/content/items/8d684f1841fa4dbea6afaefc8a1ba0fc/info/metadata/metadata.xml?format=default&output=html>
-
-This data comes from the Waka Kotahi Crash Abalysis System (CAS), which records all traffic crashes reported to us by the NZ Police. CAS legal access with a motor vehicle.
-
-The data updates monthly, in the first week of each month.
-
-Data is currently available from 1 Janauray 2000. the dataset includes crash variables that are non-personal data.
-
-Data quality statement:
-
-NZ transport aim to process all fatal crashes within one working day of receiving the crash report from NZ Police.
-
-We aim to process all injury crashes (serious and minor injury) within 4 weeks of receiving the crash report. It may take up to seven months for non-injury crashes to be processes in CAS.
-
-Up-to-date information on current number of outstanding crash reports Most unprocessed crash reports will be for crashes where there weren't any injuries.
-
-Data quality caveats:
-
--   This data comes from the road traffic crash database Crash Analysis System (CAS) version 2.1.0.
-
--   As the data is live, data can sometimes change after we received it, that is the data is not static after we publish it.
-
--   After a crash, NZ Police send us a Traffic Crash Report (TCR). This may not happen immediately. A crash must have happened on a road to be recorded in CAS. The CAS definition of a road is any street, motorway or beach, or place that can access with a motor vehicle.
-
-There is a lag between the time of a crash to CAS having full and correct crash records. This is due to the police reporting time frame, and data processing.
-
-People don't report all crashes to the NZ Police. The level of reporting increases with the severity of the crash.
-
-Crash severity is the severity of the worst injury in the crash.
-
-There may be more than one injusry in a crasg. 2020 and 2021 data is incomplete.
-
-Data about all traffic crashes reported to us by the NZ Police
-
-++++++++++++++++++++
-
-Waka Kotahi NZ Transport Agency manages the Crash Analysis System (CAS); New Zealand's primary tool for capturing information on where, when and how road crashes occur.
-
-The system provides toos to analyse and map crashes, and enables users to identify high-risk locations and monitor trends and crash sites. This information helps inform transport policy, designa nd prioritise road safety improvements and monitor their effectiveness.
-
-CAS is used by a range of organisations all with the broad aim of improving road safety. It is an essential tool in supporting the Government's road safety stratefy Road to zero. The strategy adopts a Vision Zero approach - a New Zealand where no-one is killed or seriously injured in road crashes, and where no death or serious injury while travelling on our roads is acceptable. CAS enab;es the transport sector over the long term, to improve road safety through knowledge, research and the measurements of the effects of changes to the network and network user behaviour.
-
-### c. SA2 Polygons
-
-<https://catalogue.data.govt.nz/dataset/statistical-area-2-2018-clipped-generalised>
-
-This dataset is definitive set of statistical area 2 (SA2) boundaries at 1 January 2018, clipped to the coastline. This clipped version has been create for map creation/cartographic purposes and may not fully represent the official full extent boundaries. SA2 is a new output geography that provides higher aggregations of population data that can be provided at the statistical area 1 (SA1) level. SA2s are defined at meshblock and SA1 levels
-
-Digital boundary data became freely available on 1 July 2007. This generalised version has been simplified for rapid drawing and is designed for thematic or web mapping purposes.
-
-For further information see ANZLIC Metadata 2018 Statistical Area 2 attachment below.
-
-Please note that a review of SA2 names was undertaken in early 2018. The review addressed issues with inconsistent naming and applied corrections, resulting in an update to this dataset applied in May 2018. All SA2 codes are unchanged.
+The statistical Area 2 clipped polygons are extracted from Statistics New Zealand. It is defined at mesh block and statistical area 1 level geographic units. The statistical area 2 geospatial data are updated over time due to changes in geographic boundaries [5]. In this research, we are using the 2018 statistical area 2 clipped to coastline version to suit the 2018 census main means of work data.
 
 ### d. Auckland Traffic Counter
 
-Auckland Traffic Counter data is available in Aucklant Transport data. The data contains traffic from x year.
+The Auckland traffic counts dataset is sourced from Auckland Transport. The data is an approximate indication of traffic volumes across different sites in Auckland. The traffic volumes are counted at varying dates and times; for example, AM peak, Mid peak and PM peak, and weekday and weekend volumes. The traffic counts predominantly count both directions of traffic flow (99.68% of traffic counts in both directions of traffic). The data set also contains information on the coordinates of the exact location of the traffic counters, typically on the side of the road. This data has helped understand traffic volume to support road design, prioritising network improvements, assess road safety risk exposure and determine the effectiveness of past road improvements [6].
+
+In this study, we used Auckland traffic counts that occurred in 2018 to validate the traffic volume obtained from the simulated routes against actual traffic volumes. As mentioned earlier, the traffic counter is placed on the side of the road. This means it will not intersect with any of the simulated routes. The width of the road varies depending on the type of road and the area; thus, these need to account for when associating the simulated routes with the traffic volumes from the traffic counter. We determined that the optimal distance between the route in either direction of the traffic flow and the location of the traffic counter is 20 meters. Around 30% of the traffic counters are not within a 20 meters radius from the commuter's routes. The main reason for this is that we are using centroids of the statistical area 2 geographic unit rather than the actual residence of the drivers; thus, there are routes that the driver does not traverse for this reason.
+
+###e. Dataset Analysis references
+
+Reference
+
+[1] https://datafinder.stats.govt.nz/table/104720-2018-census-main-means-of-travel-to-work-by-statistical-area-2/
+[2] https://at.govt.nz/about-us/reports-publications/2018-census/
+
+[3] https://www.nzta.govt.nz/safety/partners/crash-analysis-system/
+
+[4] https://www.transport.govt.nz/area-of-interest/safety/road-to-zero/
+
+[5] https://catalogue.data.govt.nz/dataset/statistical-area-2-2018-clipped-generalised
+[6] https://at.govt.nz/about-us/reports-publications/traffic-counts/ 
+
+
 
 ```{r}
 
