@@ -114,7 +114,7 @@ Wanted to set the scene on the relevance of road safety, how New Zealand's road 
 
 -   Validating the the routes
 
-## 4.3 Datasets and Processing the Data
+## 4.3 Datasets and Processing the Data (Dataset Analysis)
 
 ```{r include=FALSE}
 
@@ -349,6 +349,8 @@ Figure
 
 ![](plot/crash_points2.png)
 
+![](plot/cas%20data%20black%20and%20red%20plot.png)
+
 *Figure 1. Crash points*
 
 ```{r}
@@ -359,7 +361,10 @@ Figure
 #       alpha = 0,  
 #      alpha.regions = 0.05, 
 #       layer.name = "Injury Crash for all crash years",
-#        cex = 2) #change alpha from 0.1 to 0.05
+#        cex = 2, col.region = "red") #change alpha from 0.1 to 0.05
+
+
+
 ```
 
 <https://www.nzta.govt.nz/safety/partners/crash-analysis-system/>
@@ -832,24 +837,33 @@ cas
 ```{r}
 #FINAL
 
-cas_data_akl_2018_proj 
-
-str(akl_dist_travel)
-
-
-get_risk(st_coordinates(cas_data_akl_2018_proj)[, "X"], 
-         st_coordinates(cas_data_akl_2018_proj)[, "Y"], 
-         cas_data_akl_2018_proj$seriousInjuryCount + cas_data_akl_2018_proj$fatalCount,
-         akl_dist_travel)
-
-cbind(cas_data_akl_proj, cas_data_akl_proj$seriousInjuryCount)
-
-
+##getting the risk
 risk_proj <-  get_risk(cas_data_akl_2018_proj['geometry'], cas_data_akl_2018_proj$seriousInjuryCount + cas_data_akl_2018_proj$fatalCount, akl_dist_travel)
 
-risk_proj$ksi_bkm <- as.numeric(risk_proj$risk * 1000000000000)
+#saveRDS(risk_proj, "artefacts/risk_proj")
+
+risk_proj <- readRDS("artefacts/risk_proj")
+
+# there are 8 polygons with no ksi crashes
+sum(is.na(risk_proj$risk))
+
+risk_proj
+
+risk_proj$ksi_bkm <- as.numeric(risk_proj$risk * 1000000000)
 
 mapview(risk_proj, zcol = "ksi_bkm")
+
+mapview(risk_proj, zcol = "total_crash_weight")
+
+
+sum(cas_data_akl_2018_proj$seriousInjuryCount + cas_data_akl_2018_proj$fatalCount)
+
+# there are some polygons that are double counting
+sum(risk_proj$total_crash_weight, na.rm = TRUE)
+
+summary(risk_proj$total_crash_weight)
+
+mapview(risk_proj[risk_proj$total_crash_weight == 14, ])
 
 ```
 
@@ -893,6 +907,7 @@ cas_data_akl_2018_proj <- st_transform(cas_data_akl_2018_geo, crs = 2193)
 #saving artefacts
 #saveRDS(route_riskiness_d_proj, "artefacts/route_riskiness_d_proj")
 
+route_riskiness_d_proj <- readRDS("artefacts/route_riskiness_d_proj")
 
 ```
 
@@ -936,6 +951,71 @@ mapview(jtw_driving_akl_SA2_cas_dep, zcol = "cas_per_SA2_res")
 
 mapview(jtw_driving_akl_SA2_cas_dep %>% mutate(cas_per_SA2_res = sqrt(cas_per_SA2_res)), zcol = "cas_per_SA2_res")
 
+
+```
+
+```{r}
+
+
+plot(round(route_riskiness_d_proj[["dist"]]/1000, 0),
+     route_riskiness_d_proj[["crash_within_5m"]], 
+     xlab = "distance traveled (km)",
+     ylab = "crash points", pch=19, col="#00000010"
+     )
+
+## route distance vs number of crashes encountered per crash
+plot(round(route_riskiness_d_proj[which(route_riskiness_d_proj$dist < 600000),][["dist"]]/1000, 0),
+     route_riskiness_d_proj[which(route_riskiness_d_proj$dist < 600000),][["crash_within_5m"]], 
+     xlab = "distance traveled (km)",
+     ylab = "crash points", pch=19, col="#00000010"
+     )
+
+```
+
+### i. Modelling the relationship between distance travelled and the number of crashes encountered within 5meters
+
+-   outliers were removed
+
+```{r}
+
+d <- route_riskiness_d_proj[which(route_riskiness_d_proj$dist < 600000),]
+
+cas_dist.fit <- lm(formula = crash_within_5m ~ dist, 
+                  data = route_riskiness_d_proj[which(route_riskiness_d_proj$dist < 600000),])
+
+
+
+```
+
+```{r}
+
+library(s20x)
+
+# equivalence of variance check
+plot(cas_dist.fit, which = 1, pch = 19, col = grey(0.2, 0.2))
+
+# normality check
+normcheck(cas_dist.fit)
+
+## trendscatter to check if there is some curvature
+trendscatter(crash_within_5m ~ dist, data =  route_riskiness_d_proj[which(route_riskiness_d_proj$dist < 600000),])
+
+#checking for outliers
+cooks20x(cas_dist.fit) #anything more than 0.4 is an influential outlier
+
+summary(cas_dist.fit)
+
+confint(cas_dist.fit)
+
+```
+
+```{r}
+
+
+plot(crash_within_5m ~ dist, data =d, pch = 19, col="#00000010")
+
+o = order(d$dist)
+lines(d$dist[o], fitted(cas_dist.fit)[o], col = "red")
 
 ```
 
@@ -996,6 +1076,23 @@ Comparing 10 meters vs 15 meters vs 20 meters radius - it seems that 20 meters c
 #                      jtw_driving_akl_with_routes_proj[(!st_is_empty(jtw_driving_akl_with_routes_proj)), ],
 #                      dist = 20))
 
+
+## removing rows with no routes for simplicity
+jtw_driving_akl_with_routes_proj_cleaned <- jtw_driving_akl_with_routes_proj[(!st_is_empty(jtw_driving_akl_with_routes_proj)), ]
+jtw_driving_akl_with_routes_proj[(!st_is_empty(jtw_driving_akl_with_routes_proj)), ]
+
+## getting the total drivers that intersected with route within 20 meters
+total_drivers_within_20m <- lapply(seq.int(nrow(at_traffic_count_2018_proj)), 
+       function(i){
+         sum(jtw_driving_akl_with_routes_proj_cleaned[which(st_is_within_distance(jtw_driving_akl_with_routes_proj_cleaned,
+                      at_traffic_count_2018_proj[i, ],
+                      dist = 20, 
+                      sparse = FALSE))
+                      , ]$total_driving)})
+
+at_traffic_count_2018_proj$total_drivers_within_20m <- unlist(total_drivers_within_20m)
+
+
 ## number of traffic counters with no route
 #sum(at_traffic_count_2018_proj$route_within_20m == 0) #651
 
@@ -1004,12 +1101,12 @@ Comparing 10 meters vs 15 meters vs 20 meters radius - it seems that 20 meters c
 
 #30% of the traffic counter doesn't have any routes 
 
-mapview(at_traffic_count_2018_proj[at_traffic_count_2018_proj$route_within_20m == 0, ], 
-        layer.name = "Traffic counter with no routes within 20m",
-        col.regions = "red", cex = 2 ) +
-  mapview(jtw_driving_akl_with_routes_proj, layer.name = "JTW Auckland Routes")
+#mapview(at_traffic_count_2018_proj[at_traffic_count_2018_proj$route_within_20m == 0, ], 
+#        layer.name = "Traffic counter with no routes within 20m",
+#        col.regions = "red", cex = 2 ) +
+#  mapview(jtw_driving_akl_with_routes_proj, layer.name = "JTW Auckland Routes")
 
-#saveRDS(at_traffic_count_2018_proj, "artefacts/at_traffic_count_2018_proj.rds")
+saveRDS(at_traffic_count_2018_proj, "artefacts/at_traffic_count_2018_proj.rds")
 
 #saveRDS(at_traffic_count_2018_geo, "artefacts/at_traffic_count_2018_geo.rds")
 
@@ -1031,6 +1128,34 @@ mapview(at_traffic_count_2018_proj[at_traffic_count_2018_proj$route_within_20m =
 ```
 
 ![](plot/Auckland%20Traffic%20Counter%20with%20no%20routes.png)
+
+The Auckland Traffic Counter data records traffic on both sides.
+
+```{r}
+
+
+plot(`AM Peak Volume` ~ total_drivers_within_20m, 
+     data = at_traffic_count_2018_proj, 
+     pch = 19,
+     col="#00000010")
+
+plot(`AM Peak Volume` ~ total_drivers_within_20m, 
+     data = at_traffic_count_2018_proj[at_traffic_count_2018_proj$route_within_20m > 0, ], 
+     pch = 19,
+     col="#00000010", asp = 1, xlim = c(0,4000))
+
+plot(`AM Peak Volume` + `Mid Peak Volume` ~ total_drivers_within_20m, 
+     data = at_traffic_count_2018_proj, 
+     pch = 19,
+     col="#00000010")
+
+
+plot(`AM Peak Volume` + `Mid Peak Volume` ~ total_drivers_within_20m, 
+     data = at_traffic_count_2018_proj[at_traffic_count_2018_proj$route_within_20m <500, ], 
+     pch = 19,
+     col="#00000010")
+
+```
 
 ## 3.9 Autocorrelation
 
